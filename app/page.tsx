@@ -2,11 +2,17 @@ import { getSupabaseClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+// Helper sederhana untuk format rupiah tanpa masalah hydration
+function formatRupiah(amount: number | string | null | undefined) {
+  if (!amount) return '0';
+  const num = typeof amount === 'number' ? amount : parseFloat(amount);
+  if (isNaN(num)) return '0';
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
 export default async function HomePage() {
   const supabase = getSupabaseClient();
 
-  // Pengurutan berdasarkan 'created_at' dihapus agar tidak error, 
-  // karena tabel di Supabase tidak memiliki kolom 'created_at'
   const { data: books, error } = await supabase
     .from('books')
     .select('*');
@@ -66,7 +72,7 @@ export default async function HomePage() {
 
                 <div className="p-5 pt-0 border-t border-gray-50 mt-4 flex items-center justify-between">
                   <span className="text-lg font-bold text-green-600">
-                    Rp {Number(book.price).toLocaleString('id-ID')}
+                    Rp {formatRupiah(book.price)}
                   </span>
                   <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
                     Beli Buku
