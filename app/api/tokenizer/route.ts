@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Server Key Midtrans belum dikonfigurasi' }, { status: 500 });
     }
 
-    // Mengambil 8 karakter pertama dari ID agar aman dari batas 50 karakter Midtrans
+    // Format order_id pendek untuk Midtrans (Maks 50 karakter)
     const shortId = String(id).slice(0, 8);
     const orderId = `BOOK-${shortId}-${Date.now()}`;
 
@@ -20,10 +20,10 @@ export async function POST(request: Request) {
       },
       item_details: [
         {
-          id: String(id).slice(0, 50),
+          id: String(id), // ID ASLI dari Supabase (UUID utuh)
           price: Number(price),
           quantity: 1,
-          name: title.slice(0, 50),
+          name: title ? String(title).slice(0, 50) : 'Buku',
         },
       ],
       customer_details: {
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: data.error_messages || 'Gagal membuat transaksi' }, { status: response.status });
     }
 
-    return NextResponse.json({ token: data.token });
+    return NextResponse.json({ token: data.token, orderId });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }

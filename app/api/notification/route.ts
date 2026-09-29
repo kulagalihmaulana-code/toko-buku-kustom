@@ -55,10 +55,27 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
   
   const supabase = getSupabaseClient();
 
-  // Ambil ID Buku dari item_details yang dikirim Midtrans
-  const item = payload.item_details?.[0] || payload.item?.[0];
-  const bookId = item?.id;
+  // 1. Ambil ID buku dari item_details payload Midtrans
+  let bookId = payload.item_details?.[0]?.id || payload.item?.[0]?.id;
 
+  // 2. Fallback: Jika item_details kosong, cari buku di Supabase yang ID-nya diawali oleh shortId dari orderId
+  if (!bookId) {
+    const parts = orderId.split('-'); // Format: BOOK-[shortId]-[timestamp]
+    if (parts.length >= 2) {
+      const shortId = parts[1];
+      
+      const { data: allBooks } = await supabase
+        .from('books')
+        .select('id, stock, title');
+
+      const matchedBook = allBooks?.find((b) => String(b.id).startsWith(shortId));
+      if (matchedBook) {
+        bookId = matchedBook.id;
+      }
+    }
+  }
+
+  // 3. Eksekusi pemotongan stok jika ID buku ditemukan
   if (bookId) {
     const { data: book, error: fetchError } = await supabase
       .from('books')
@@ -90,7 +107,7 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
       }
     }
   } else {
-    console.log('[WARNING] ID Buku tidak ditemukan dalam payload item_details');
+    console.log('[WARNING] ID Buku tidak ditemukan sama sekali dalam payload atau database');
   }
 }
 
