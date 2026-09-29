@@ -2,7 +2,6 @@ import { getSupabaseClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-// Helper sederhana untuk format rupiah tanpa masalah hydration
 function formatRupiah(amount: number | string | null | undefined) {
   if (!amount) return '0';
   const num = typeof amount === 'number' ? amount : parseFloat(amount);
@@ -11,14 +10,20 @@ function formatRupiah(amount: number | string | null | undefined) {
 }
 
 export default async function HomePage() {
-  const supabase = getSupabaseClient();
+  let books: any[] | null = [];
+  let errorMessage: string | null = null;
 
-  const { data: books, error } = await supabase
-    .from('books')
-    .select('*');
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase.from('books').select('*');
 
-  if (error) {
-    console.error('Error fetching books:', error);
+    if (error) {
+      errorMessage = error.message;
+    } else {
+      books = data;
+    }
+  } catch (err: any) {
+    errorMessage = err?.message || 'Gagal terhubung ke database Supabase.';
   }
 
   return (
@@ -33,7 +38,12 @@ export default async function HomePage() {
           </p>
         </header>
 
-        {(!books || books.length === 0) ? (
+        {errorMessage ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-lg text-center">
+            <p className="font-semibold text-lg mb-1">Terjadi Kendala Koneksi:</p>
+            <p className="text-sm">{errorMessage}</p>
+          </div>
+        ) : (!books || books.length === 0) ? (
           <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
             Belum ada buku yang tersedia saat ini.
           </div>
