@@ -9,8 +9,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Server Key Midtrans belum dikonfigurasi' }, { status: 500 });
     }
 
-    // Buat Order ID unik menggunakan timestamp
-    const orderId = `BOOK-${id}-${Date.now()}`;
+    // Mengambil 8 karakter pertama dari ID agar aman dari batas 50 karakter Midtrans
+    const shortId = String(id).slice(0, 8);
+    const orderId = `BOOK-${shortId}-${Date.now()}`;
 
     const parameter = {
       transaction_details: {
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
       },
       item_details: [
         {
-          id: String(id),
+          id: String(id).slice(0, 50),
           price: Number(price),
           quantity: 1,
           name: title.slice(0, 50),
