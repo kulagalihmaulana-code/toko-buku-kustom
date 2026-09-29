@@ -5,10 +5,11 @@ export const dynamic = 'force-dynamic';
 export default async function HomePage() {
   const supabase = getSupabaseClient();
 
+  // Pengurutan berdasarkan 'created_at' dihapus agar tidak error, 
+  // karena tabel di Supabase tidak memiliki kolom 'created_at'
   const { data: books, error } = await supabase
     .from('books')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .select('*');
 
   if (error) {
     console.error('Error fetching books:', error);
@@ -55,9 +56,11 @@ export default async function HomePage() {
                     <p className="text-sm text-gray-500 mb-3">
                       Penulis: {book.author}
                     </p>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {book.description}
-                    </p>
+                    {book.description && (
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {book.description}
+                      </p>
+                    )}
                   </div>
                 </div>
 
