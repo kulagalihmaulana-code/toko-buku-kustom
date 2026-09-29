@@ -1,9 +1,10 @@
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
-export const revalidate = 0; // Memastikan data selalu segar/terbaru dari database
+export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  // Ambil data buku dari tabel 'books'
+  const supabase = getSupabaseClient();
+
   const { data: books, error } = await supabase
     .from('books')
     .select('*')
@@ -25,13 +26,11 @@ export default async function HomePage() {
           </p>
         </header>
 
-        {/* Jika belum ada buku / terjadi error */}
         {(!books || books.length === 0) ? (
           <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
             Belum ada buku yang tersedia saat ini.
           </div>
         ) : (
-          /* Grid Kartu Buku */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {books.map((book) => (
               <div
@@ -78,4 +77,3 @@ export default async function HomePage() {
     </main>
   );
 }
-export const dynamic = 'force-dynamic';
