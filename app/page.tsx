@@ -1,4 +1,5 @@
 import { getSupabaseClient } from '@/lib/supabase';
+import BuyButton from './components/BuyButton'; // 1. Impor BuyButton di sini
 
 export const dynamic = 'force-dynamic';
 
@@ -80,13 +81,17 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                <div className="p-5 pt-0 border-t border-gray-50 mt-4 flex items-center justify-between">
-                  <span className="text-lg font-bold text-green-600">
+                <div className="p-5 pt-0 border-t border-gray-50 mt-4 flex items-center justify-between gap-2">
+                  <span className="text-lg font-bold text-green-600 whitespace-nowrap">
                     Rp {formatRupiah(book.price)}
                   </span>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                    Beli Buku
-                  </button>
+                  
+                  {/* 2. Ganti tombol lama dengan komponen BuyButton */}
+                  <BuyButton
+                    bookId={String(book.id)}
+                    title={book.title}
+                    price={Number(book.price)}
+                  />
                 </div>
               </div>
             ))}
