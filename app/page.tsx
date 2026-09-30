@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import BuyButton from './components/BuyButton'; // 1. Impor BuyButton di sini
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,7 @@ export default async function HomePage() {
   let errorMessage: string | null = null;
 
   try {
-    const supabase = getSupabaseClient();
+    const supabase = supabaseAdmin;
     const { data, error } = await supabase.from('books').select('*');
 
     if (error) {

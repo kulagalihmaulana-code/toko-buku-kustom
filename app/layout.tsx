@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script"; // 1. Import Script
+import Script from "next/script";
+import Navbar from "./components/Navbar"; // ← Tambahan 1
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,9 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <Navbar /> {/* ← Tambahan 2 */}
+        
         {children}
 
-        {/* 2. Script Midtrans Snap Sandbox */}
+        {/* Script Midtrans Snap Sandbox */}
         <Script
           src="https://app.sandbox.midtrans.com/snap/snap.js"
           data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
