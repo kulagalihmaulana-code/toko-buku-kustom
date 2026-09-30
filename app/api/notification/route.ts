@@ -6,7 +6,7 @@ import { Resend } from 'resend';
 // Inisialisasi Resend Client
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Inisialisasi Supabase Admin Client agar bisa membuat Signed URL dari bucket private
+// Inisialisasi Supabase Admin Client
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -72,14 +72,14 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
   // B. Cari ID buku dari item_details Midtrans
   let bookId = payload.item_details?.[0]?.id || payload.item?.[0]?.id;
 
-  // Fallback: Jika item_details kosong, cari buku via shortId
+  // Fallback: Jika item_details kosong, cari via shortId
   if (!bookId) {
     const parts = orderId.split('-');
     if (parts.length >= 2) {
       const shortId = parts[1];
       const { data: allBooks } = await supabaseAdmin
         .from('books')
-        .select('id, stock, title, file_path');
+        .select('id, stock, title, file_path, format');
 
       const matchedBook = allBooks?.find((b) => String(b.id).startsWith(shortId));
       if (matchedBook) {
@@ -89,20 +89,22 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
   }
 
   let downloadUrl = '';
-  let bookTitle = 'E-Book Digital';
+  let bookTitle = 'Buku Digital / Fisik';
+  let bookFormat = 'ebook'; // Default format
 
-  // C. Potong stok & Buat Signed URL (Link Download)
+  // C. Potong stok, cek format, & Buat Signed URL jika e-book
   if (bookId) {
     const { data: book, error: fetchError } = await supabaseAdmin
       .from('books')
-      .select('id, stock, title, file_path')
+      .select('id, stock, title, file_path, format')
       .eq('id', bookId)
       .single();
 
     if (fetchError) {
       console.error('[SUPABASE ERROR]', fetchError.message);
     } else if (book) {
-      bookTitle = book.title || 'E-Book Digital';
+      bookTitle = book.title || 'Buku Digital / Fisik';
+      bookFormat = book.format || 'ebook';
 
       // 1. Potong Stok Buku
       const currentStock = Number(book.stock) || 0;
@@ -113,8 +115,8 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
           .eq('id', bookId);
       }
 
-      // 2. Buat Signed URL dari Storage Bucket 'ebooks' (Berlaku 24 Jam)
-      if (book.file_path) {
+      // 2. Buat Signed URL HANYA jika produk memiliki format 'ebook' atau 'both'
+      if ((bookFormat === 'ebook' || bookFormat === 'both') && book.file_path) {
         const { data: signedData, error: signedError } = await supabaseAdmin
           .storage
           .from('ebooks')
@@ -130,35 +132,58 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
     }
   }
 
-  // D. Pengiriman Email Konfirmasi + Tombol Download via Resend
+  // D. Pengisian Konten Email Berdasarkan Format Produk
   const recipientEmail = payload.customer_details?.email;
   const recipientName = payload.customer_details?.first_name || 'Pembeli';
 
+  let productDetailsHtml = '';
+
+  // Template Konten E-Book
+  const ebookBlock = downloadUrl
+    ? `
+      <div style="margin: 25px 0; text-align: center; background-color: #eff6ff; padding: 20px; border-radius: 8px; border: 1px solid #bfdbfe;">
+        <h4 style="margin: 0 0 10px 0; color: #1e40af;">Akses E-Book Anda</h4>
+        <a href="${downloadUrl}" 
+           style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block; font-size: 15px;">
+          📥 Download E-Book (PDF)
+        </a>
+        <p style="font-size: 12px; color: #64748b; margin-top: 10px; margin-bottom: 0;">
+          *Link berlaku 24 jam demi keamanan file.
+        </p>
+      </div>
+    `
+    : `
+      <div style="margin: 20px 0; padding: 15px; background-color: #fef2f2; border-radius: 6px; border: 1px solid #fecaca; color: #991b1b; font-size: 13px;">
+        File e-book sedang disiapkan. Jika tombol unduh belum muncul, hubungi layanan pelanggan kami.
+      </div>
+    `;
+
+  // Template Konten Buku Fisik
+  const physicalBlock = `
+    <div style="margin: 25px 0; background-color: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0;">
+      <h4 style="margin: 0 0 10px 0; color: #166534;">📦 Informasi Pengiriman Buku Fisik</h4>
+      <p style="margin: 0; font-size: 14px; color: #15803d; line-height: 1.5;">
+        Pesanan buku fisik Anda sedang dikemas oleh tim logistik kami. Nomor resi pengiriman akan diperbarui secara otomatis setelah kurir mengangkut paket Anda.
+      </p>
+    </div>
+  `;
+
+  // Gabungkan Blok Email Sesuai Format
+  if (bookFormat === 'ebook') {
+    productDetailsHtml = ebookBlock;
+  } else if (bookFormat === 'physical') {
+    productDetailsHtml = physicalBlock;
+  } else if (bookFormat === 'both') {
+    productDetailsHtml = ebookBlock + physicalBlock;
+  }
+
+  // E. Pengiriman Email via Resend
   if (recipientEmail) {
     try {
-      // Menyiapkan Tampilan Tombol Download
-      const downloadButtonHtml = downloadUrl
-        ? `
-          <div style="margin: 30px 0; text-align: center;">
-            <a href="${downloadUrl}" 
-               style="background-color: #2563eb; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block; font-size: 16px;">
-              📥 Download E-Book (${bookTitle})
-            </a>
-            <p style="font-size: 12px; color: #64748b; margin-top: 10px; line-height: 1.4;">
-              *Link download ini berlaku selama 24 jam demi keamanan file.
-            </p>
-          </div>
-        `
-        : `
-          <p style="font-size: 13px; color: #dc2626; line-height: 1.5; margin-top: 20px;">
-            File e-book sedang disiapkan. Jika tombol belum muncul, silakan hubungi layanan pelanggan kami.
-          </p>
-        `;
-
       await resend.emails.send({
         from: 'Toko Buku Digital <onboarding@resend.dev>',
         to: recipientEmail,
-        subject: `[Akses E-Book] Invoice & Download - ${orderId}`,
+        subject: `[Konfirmasi Pesanan] Invoice & Detail Produk - ${orderId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
             <h2 style="color: #0f172a; margin-top: 0;">Pembayaran Berhasil!</h2>
@@ -166,18 +191,22 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
             <p>Terima kasih atas pesanan Anda. Pembayaran untuk order <strong>${orderId}</strong> telah kami terima.</p>
             
             <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
-              <p style="margin: 0; font-weight: bold; color: #334155;">Total Pembayaran:</p>
-              <p style="margin: 5px 0 0 0; font-size: 18px; color: #0284c7; font-weight: bold;">
-                Rp ${Number(payload.gross_amount).toLocaleString('id-ID')}
+              <p style="margin: 0; font-weight: bold; color: #334155;">Detail Pesanan:</p>
+              <p style="margin: 5px 0 0 0; font-size: 15px; color: #0f172a; font-weight: bold;">${bookTitle}</p>
+              <p style="margin: 5px 0 0 0; font-size: 16px; color: #0284c7; font-weight: bold;">
+                Total: Rp ${Number(payload.gross_amount).toLocaleString('id-ID')}
               </p>
             </div>
 
-            ${downloadButtonHtml}
+            ${productDetailsHtml}
 
+            <p style="font-size: 12px; color: #94a3b8; margin-top: 30px; text-align: center;">
+              Toko Buku Digital — Layanan Otomatis 24/7
+            </p>
           </div>
         `
       });
-      console.log(`[EMAIL SUCCESS] Email invoice & link download berhasil dikirim ke: ${recipientEmail}`);
+      console.log(`[EMAIL SUCCESS] Email dual-template berhasil dikirim ke: ${recipientEmail}`);
     } catch (emailError: any) {
       console.error('[EMAIL ERROR]', emailError.message);
     }
