@@ -57,12 +57,30 @@ export async function POST(req: Request) {
         quantity: item.quantity,
       });
 
-      // Ambil file_path dari buku
-      const filePath = item.books?.file_path;
-      console.log(`Checking book: ${item.books?.title}, file_path: ${filePath}`);
+      // Penanganan aman relasi Supabase (bisa berupa object tunggal atau array)
+      const bookData = Array.isArray(item.books) ? item.books[0] : item.books;
+      
+      // Ambil file_path langsung dari relasi atau query fallback ke tabel books jika null
+      let filePath = bookData?.file_path;
+      let bookTitle = bookData?.title || 'E-Book';
+
+      if (!filePath && item.book_id) {
+        const { data: directBook } = await supabaseAdmin
+          .from('books')
+          .select('title, file_path')
+          .eq('id', item.book_id)
+          .single();
+        
+        if (directBook) {
+          filePath = directBook.file_path;
+          bookTitle = directBook.title;
+        }
+      }
+
+      console.log(`Checking book: ${bookTitle}, file_path: ${filePath}`);
 
       if (filePath) {
-        // Coba buat Signed URL (24 jam = 86400 detik)
+        // Generate Signed URL (24 jam)
         const { data: signedData, error: signedError } = await supabaseAdmin
           .storage
           .from('ebooks')
@@ -71,12 +89,14 @@ export async function POST(req: Request) {
         if (signedError) {
           console.error(`Gagal createSignedUrl untuk path "${filePath}":`, signedError);
         } else if (signedData?.signedUrl) {
-          console.log(`Signed URL berhasil dibuat untuk ${item.books.title}`);
+          console.log(`Signed URL berhasil dibuat untuk ${bookTitle}`);
           downloadLinks.push({
-            bookTitle: item.books.title,
+            bookTitle,
             url: signedData.signedUrl,
           });
         }
+      } else {
+        console.error(`Buku ID ${item.book_id} tidak memiliki file_path di database`);
       }
     }
 
@@ -106,7 +126,7 @@ export async function POST(req: Request) {
                 <div style="margin-bottom: 15px; padding: 12px; background: #ffffff; border-radius: 6px; border: 1px solid #e4e4e7;">
                   <strong style="font-size: 15px; color: #18181b;">${link.bookTitle}</strong><br/>
                   <a href="${link.url}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 10px 18px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">
-                    Download E-Book
+                    Download E-Book (PDF)
                   </a>
                 </div>
               `
@@ -114,7 +134,11 @@ export async function POST(req: Request) {
                 .join('')}
             </div>
           `
-              : `<p style="color: #3f3f46;">Pesanan buku fisik Anda sedang dikemas dan akan segera dikirimkan.</p>`
+              : `
+            <div style="background-color: #fef2f2; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #fecaca;">
+              <p style="color: #991b1b; margin: 0;"> Link download e-book gagal dibuat otomatis. Tim kami akan mengirimkan link manual ke email ini.</p>
+            </div>
+          `
           }
 
           <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
