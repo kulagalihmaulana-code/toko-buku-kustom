@@ -38,7 +38,11 @@ export default async function OrderPortalPage({
 
   // 3. Buat Signed URL jika pembayaran LUNAS ('paid') dan produk memiliki e-book
   let downloadUrl = '';
-  if (order.status === 'paid' && book?.file_path && (book.format === 'ebook' || book.format === 'both')) {
+  if (
+    order.status === 'paid' &&
+    book?.file_path &&
+    (book.format === 'ebook' || book.format === 'both')
+  ) {
     const { data: signedData } = await supabaseAdmin
       .storage
       .from('ebooks')
@@ -54,12 +58,13 @@ export default async function OrderPortalPage({
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-2xl mx-auto space-y-6">
-        
         {/* Header Status Transaksi */}
         <div className="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
             <div>
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">ID Pesanan</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
+                ID Pesanan
+              </p>
               <h1 className="text-lg font-bold text-slate-800">{order.order_id}</h1>
             </div>
             <div>
@@ -78,13 +83,19 @@ export default async function OrderPortalPage({
           {/* Rincian Produk */}
           <div className="space-y-4">
             <p className="text-sm text-slate-500">
-              Pembeli: <span className="font-medium text-slate-700">{order.customer_name}</span> ({order.customer_email})
+              Pembeli:{' '}
+              <span className="font-medium text-slate-700">{order.customer_name}</span> (
+              {order.customer_email})
             </p>
 
             <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 flex justify-between items-center">
               <div>
-                <p className="font-semibold text-slate-800">{book?.title || 'Buku Digital / Fisik'}</p>
-                <p className="text-xs text-slate-500 uppercase mt-0.5">Format: {book?.format || 'ebook'}</p>
+                <p className="font-semibold text-slate-800">
+                  {book?.title || 'Buku Digital / Fisik'}
+                </p>
+                <p className="text-xs text-slate-500 uppercase mt-0.5">
+                  Format: {book?.format || 'ebook'}
+                </p>
               </div>
               <p className="text-base font-bold text-sky-600">
                 Rp {Number(order.total_amount).toLocaleString('id-ID')}
@@ -95,7 +106,9 @@ export default async function OrderPortalPage({
           {/* Akses E-Book (Jika Lunas & Ada Ebook) */}
           {isPaid && downloadUrl && (
             <div className="mt-6 p-5 bg-blue-50 border border-blue-200 rounded-xl text-center">
-              <h3 className="font-bold text-blue-900 text-base mb-1">Akses File E-Book Anda</h3>
+              <h3 className="font-bold text-blue-900 text-base mb-1">
+                Akses File E-Book Anda
+              </h3>
               <p className="text-xs text-blue-700 mb-4">
                 Klik tombol di bawah ini untuk mengunduh e-book Anda.
               </p>
@@ -113,9 +126,12 @@ export default async function OrderPortalPage({
           {/* Akses Fisik (Jika Ada Produk Fisik) */}
           {isPaid && (book?.format === 'physical' || book?.format === 'both') && (
             <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-              <h4 className="font-semibold text-emerald-900 text-sm">📦 Pengiriman Buku Fisik</h4>
+              <h4 className="font-semibold text-emerald-900 text-sm">
+                📦 Pengiriman Buku Fisik
+              </h4>
               <p className="text-xs text-emerald-700 mt-1">
-                Pesanan Anda sedang disiapkan oleh tim logistik. Nomor resi pengiriman akan dikirimkan via email.
+                Pesanan Anda sedang disiapkan oleh tim logistik. Nomor resi pengiriman
+                akan dikirimkan via email.
               </p>
             </div>
           )}
@@ -126,17 +142,19 @@ export default async function OrderPortalPage({
           <div>
             <h3 className="font-bold text-base text-slate-100">Ingin Akses Permanen?</h3>
             <p className="text-xs text-slate-300 mt-1 max-w-md">
-              Buat akun dengan email <span className="text-sky-400 font-medium">{order.customer_email}</span> untuk menyimpan pesanan ini dan mengakses perpustakaan digital Anda kapan saja.
+              Buat akun dengan email{' '}
+              <span className="text-sky-400 font-medium">{order.customer_email}</span>{' '}
+              untuk menyimpan pesanan ini dan mengakses perpustakaan digital Anda kapan
+              saja.
             </p>
           </div>
           <Link
-            href={`/auth/register?email=${encodeURIComponent(order.customer_email)}`}
+            href={`/register?email=${encodeURIComponent(order.customer_email)}`}
             className="whitespace-nowrap bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-4 py-2.5 rounded-lg text-xs transition-colors"
           >
             Buat Akun Gratis
           </Link>
         </div>
-
       </div>
     </div>
   );

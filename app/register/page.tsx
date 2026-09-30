@@ -1,18 +1,27 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
+
+  // Auto-isi email dari URL parameter (?email=...)
+  useEffect(() => {
+    const emailFromUrl = searchParams.get('email');
+    if (emailFromUrl) {
+      setEmail(emailFromUrl);
+    }
+  }, [searchParams]);
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -38,14 +47,12 @@ export default function RegisterPage() {
 
     // 2. Simpan profil ke tabel profiles
     if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          full_name: fullName,
-          email: email,
-          role: 'customer',
-        });
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: data.user.id,
+        full_name: fullName,
+        email: email,
+        role: 'customer',
+      });
 
       if (profileError) {
         console.error('Profile error:', profileError);
@@ -134,5 +141,19 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-gray-500">Memuat...</p>
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }
