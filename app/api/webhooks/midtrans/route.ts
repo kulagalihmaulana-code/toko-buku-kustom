@@ -12,6 +12,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    console.log('Webhook Body Received:', JSON.stringify(body, null, 2));
 
     const { transaction_status, order_id, fraud_status } = body;
     const isSettled =
@@ -22,19 +23,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Transaksi belum settlement' }, { status: 200 });
     }
 
-    // 1. Update status order menjadi paid
+    // 1. Update status order di DB
     await supabaseAdmin
       .from('orders')
       .update({ status: 'paid' })
       .eq('order_id', order_id);
 
-    // 2. Ambil detail pesanan beserta data bukunya
+    // 2. Ambil detail order_items & data buku
     const { data: orderItems, error: orderError } = await supabaseAdmin
       .from('order_items')
       .select('*, books(*)')
       .eq('order_id', order_id);
 
-    // Ambil info pembeli dari tabel orders
+    // Ambil data pemesan
     const { data: orderData } = await supabaseAdmin
       .from('orders')
       .select('customer_name, customer_email')
@@ -42,12 +43,13 @@ export async function POST(req: Request) {
       .single();
 
     if (orderError || !orderItems || !orderData) {
+      console.error('Order/Items tidak ditemukan:', orderError);
       return NextResponse.json({ error: 'Order detail tidak ditemukan' }, { status: 404 });
     }
 
     const downloadLinks: { bookTitle: string; url: string }[] = [];
 
-    // 3. Proses potong stok & buat Signed URL untuk E-Book
+    // 3. Looping item & generate Signed URL
     for (const item of orderItems) {
       // Potong stok via RPC
       await supabaseAdmin.rpc('decrement_stock', {
@@ -55,14 +57,21 @@ export async function POST(req: Request) {
         quantity: item.quantity,
       });
 
-      // Jika ada file_path e-book, buat Signed URL (24 jam)
-      if (item.books && item.books.file_path) {
-        const { data: signedData } = await supabaseAdmin
+      // Ambil file_path dari buku
+      const filePath = item.books?.file_path;
+      console.log(`Checking book: ${item.books?.title}, file_path: ${filePath}`);
+
+      if (filePath) {
+        // Coba buat Signed URL (24 jam = 86400 detik)
+        const { data: signedData, error: signedError } = await supabaseAdmin
           .storage
           .from('ebooks')
-          .createSignedUrl(item.books.file_path, 86400);
+          .createSignedUrl(filePath, 86400);
 
-        if (signedData?.signedUrl) {
+        if (signedError) {
+          console.error(`Gagal createSignedUrl untuk path "${filePath}":`, signedError);
+        } else if (signedData?.signedUrl) {
+          console.log(`Signed URL berhasil dibuat untuk ${item.books.title}`);
           downloadLinks.push({
             bookTitle: item.books.title,
             url: signedData.signedUrl,
@@ -71,35 +80,45 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Kirim Email Invoice + Link E-Book via Resend
+    console.log('Total Download Links generated:', downloadLinks.length);
+
+    // 4. Kirim Email via Resend
     await resend.emails.send({
       from: 'Toko Buku Digital <onboarding@resend.dev>',
       to: [orderData.customer_email],
       subject: `[Lunas] Akses E-Book & Invoice Pesanan #${order_id}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Halo, ${orderData.customer_name}!</h2>
-          <p>Pembayaran untuk pesanan <strong>#${order_id}</strong> telah berhasil diproses.</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e4e4e7; border-radius: 8px;">
+          <h2 style="color: #18181b;">Terima Kasih, ${orderData.customer_name}!</h2>
+          <p style="color: #3f3f46;">Pembayaran untuk pesanan <strong>#${order_id}</strong> telah kami terima.</p>
+
           ${
             downloadLinks.length > 0
               ? `
-            <div style="background-color: #f4f4f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
-              <h3>Akses E-Book Anda:</h3>
-              <p style="font-size: 13px; color: #52525b;">Link di bawah ini bersifat privat dan akan <strong>hangus dalam 24 jam</strong>.</p>
+            <div style="background-color: #f4f4f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #18181b;">📚 Akses Download E-Book Anda:</h3>
+              <p style="font-size: 13px; color: #71717a; margin-bottom: 15px;">
+                Demi keamanan, link di bawah ini bersifat rahasia dan akan <strong>hangus secara otomatis dalam 24 jam</strong>.
+              </p>
               ${downloadLinks
                 .map(
                   (link) => `
-                <div style="margin-bottom: 10px;">
-                  <strong>${link.bookTitle}</strong><br/>
-                  <a href="${link.url}" style="display: inline-block; margin-top: 5px; padding: 10px 15px; background-color: #2563eb; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">Download E-Book</a>
+                <div style="margin-bottom: 15px; padding: 12px; background: #ffffff; border-radius: 6px; border: 1px solid #e4e4e7;">
+                  <strong style="font-size: 15px; color: #18181b;">${link.bookTitle}</strong><br/>
+                  <a href="${link.url}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 10px 18px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">
+                    Download E-Book
+                  </a>
                 </div>
               `
                 )
                 .join('')}
             </div>
           `
-              : `<p>Pesanan buku fisik Anda sedang diproses.</p>`
+              : `<p style="color: #3f3f46;">Pesanan buku fisik Anda sedang dikemas dan akan segera dikirimkan.</p>`
           }
+
+          <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
+          <p style="font-size: 12px; color: #a1a1aa; text-align: center;">Toko Buku Digital © 2026</p>
         </div>
       `,
     });
