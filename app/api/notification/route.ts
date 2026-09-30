@@ -200,13 +200,24 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
 
             ${productDetailsHtml}
 
+            <!-- MODEL C HYBRID: Link Portal Pesanan -->
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px dashed #cbd5e1; text-align: center;">
+              <p style="font-size: 13px; color: #475569; margin-bottom: 10px;">
+                Ingin melihat status & riwayat lengkap pesanan ini di web?
+              </p>
+              <a href="https://toko-buku-kustom-t4mr.vercel.app/orders/${orderId}" 
+                 style="color: #0284c7; font-weight: bold; text-decoration: underline; font-size: 14px;">
+                🌐 Buka Halaman Portal Pesanan Anda →
+              </a>
+            </div>
+
             <p style="font-size: 12px; color: #94a3b8; margin-top: 30px; text-align: center;">
               Toko Buku Digital — Layanan Otomatis 24/7
             </p>
           </div>
         `
       });
-      console.log(`[EMAIL SUCCESS] Email dual-template berhasil dikirim ke: ${recipientEmail}`);
+      console.log(`[EMAIL SUCCESS] Email dual-template + Portal Link berhasil dikirim ke: ${recipientEmail}`);
     } catch (emailError: any) {
       console.error('[EMAIL ERROR]', emailError.message);
     }
