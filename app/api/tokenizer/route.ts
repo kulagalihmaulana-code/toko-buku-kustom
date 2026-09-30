@@ -30,15 +30,21 @@ export async function POST(request: Request) {
     });
 
     if (insertOrderError) {
-      console.error('Gagal mencatat order:', insertOrderError);
+      console.error('[ERROR ORDERS]:', insertOrderError.message, '| Details:', insertOrderError.details, '| Hint:', insertOrderError.hint);
     } else {
       // Simpan item yang dibeli
-      await supabaseAdmin.from('order_items').insert({
+      const { error: insertItemError } = await supabaseAdmin.from('order_items').insert({
         order_id: orderId,
         book_id: id,
         quantity: 1,
         price: Number(price),
       });
+
+      if (insertItemError) {
+        console.error('[ERROR ORDER ITEMS]:', insertItemError.message, '| Details:', insertItemError.details, '| Hint:', insertItemError.hint);
+      } else {
+        console.log('[SUCCESS]: Order dan Order Item berhasil dicatat di Supabase!');
+      }
     }
 
     // B. Minta Snap Token dari Midtrans
@@ -49,7 +55,7 @@ export async function POST(request: Request) {
       },
       item_details: [
         {
-          id: String(id), // ID ASLI dari Supabase (UUID / BigInt)
+          id: String(id),
           price: Number(price),
           quantity: 1,
           name: title ? String(title).slice(0, 50) : 'Buku',
