@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { id, title, price } = await request.json();
+    const { id, title, price, customerDetails } = await request.json();
 
     const serverKey = process.env.MIDTRANS_SERVER_KEY;
     if (!serverKey) {
@@ -26,9 +26,10 @@ export async function POST(request: Request) {
           name: title ? String(title).slice(0, 50) : 'Buku',
         },
       ],
+      // Menerima data dinamis dari form modal BuyButton
       customer_details: {
-        first_name: 'Pembeli',
-        email: 'pembeli@example.com',
+        first_name: customerDetails?.first_name || 'Pembeli',
+        email: customerDetails?.email || 'pembeli@example.com',
       },
     };
 
