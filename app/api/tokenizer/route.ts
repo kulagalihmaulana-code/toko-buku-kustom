@@ -1,4 +1,11 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// Inisialisasi Supabase Admin Client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(request: Request) {
   try {
@@ -13,6 +20,28 @@ export async function POST(request: Request) {
     const shortId = String(id).slice(0, 8);
     const orderId = `BOOK-${shortId}-${Date.now()}`;
 
+    // A. Simpan Transaksi Pending ke Database Supabase
+    const { error: insertOrderError } = await supabaseAdmin.from('orders').insert({
+      order_id: orderId,
+      customer_name: customerDetails?.first_name || 'Pembeli',
+      customer_email: customerDetails?.email || 'pembeli@example.com',
+      total_amount: Number(price),
+      status: 'pending',
+    });
+
+    if (insertOrderError) {
+      console.error('Gagal mencatat order:', insertOrderError);
+    } else {
+      // Simpan item yang dibeli
+      await supabaseAdmin.from('order_items').insert({
+        order_id: orderId,
+        book_id: id,
+        quantity: 1,
+        price: Number(price),
+      });
+    }
+
+    // B. Minta Snap Token dari Midtrans
     const parameter = {
       transaction_details: {
         order_id: orderId,
@@ -20,13 +49,12 @@ export async function POST(request: Request) {
       },
       item_details: [
         {
-          id: String(id), // ID ASLI dari Supabase (UUID utuh)
+          id: String(id), // ID ASLI dari Supabase (UUID / BigInt)
           price: Number(price),
           quantity: 1,
           name: title ? String(title).slice(0, 50) : 'Buku',
         },
       ],
-      // Menerima data dinamis dari form modal BuyButton
       customer_details: {
         first_name: customerDetails?.first_name || 'Pembeli',
         email: customerDetails?.email || 'pembeli@example.com',
@@ -39,7 +67,7 @@ export async function POST(request: Request) {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Basic ${authString}`,
+        Authorization: `Basic ${authString}`,
       },
       body: JSON.stringify(parameter),
     });
