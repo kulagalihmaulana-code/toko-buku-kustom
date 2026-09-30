@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getSupabaseClient } from '@/lib/supabase';
+import { Resend } from 'resend';
+
+// Inisialisasi Resend Client
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {
@@ -58,7 +62,7 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
   // 1. Ambil ID buku dari item_details payload Midtrans
   let bookId = payload.item_details?.[0]?.id || payload.item?.[0]?.id;
 
-  // 2. Fallback: Jika item_details kosong, cari buku di Supabase yang ID-nya diawali oleh shortId dari orderId
+  // 2. Fallback: Jika item_details kosong, cari buku di Supabase
   if (!bookId) {
     const parts = orderId.split('-'); // Format: BOOK-[shortId]-[timestamp]
     if (parts.length >= 2) {
@@ -85,10 +89,7 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
 
     if (fetchError) {
       console.error('[SUPABASE ERROR]', fetchError.message);
-      return;
-    }
-
-    if (book) {
+    } else if (book) {
       const currentStock = Number(book.stock) || 0;
       
       if (currentStock > 0) {
@@ -108,6 +109,43 @@ async function handlePaymentSuccess(orderId: string, payload: any) {
     }
   } else {
     console.log('[WARNING] ID Buku tidak ditemukan sama sekali dalam payload atau database');
+  }
+
+  // 4. Pengiriman Email Konfirmasi via Resend API
+  const recipientEmail = payload.customer_details?.email;
+  const recipientName = payload.customer_details?.first_name || 'Pembeli';
+
+  if (recipientEmail) {
+    try {
+      await resend.emails.send({
+        from: 'Toko Buku Digital <onboarding@resend.dev>',
+        to: recipientEmail,
+        subject: `Invoice & Konfirmasi Pembayaran - ${orderId}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <h2 style="color: #0f172a; margin-top: 0;">Pembayaran Berhasil!</h2>
+            <p>Halo <strong>${recipientName}</strong>,</p>
+            <p>Terima kasih atas pesanan Anda. Pembayaran untuk order <strong>${orderId}</strong> telah kami terima.</p>
+            
+            <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+              <p style="margin: 0; font-weight: bold; color: #334155;">Total Pembayaran:</p>
+              <p style="margin: 5px 0 0 0; font-size: 18px; color: #0284c7; font-weight: bold;">
+                Rp ${Number(payload.gross_amount).toLocaleString('id-ID')}
+              </p>
+            </div>
+
+            <p style="font-size: 13px; color: #64748b; line-height: 1.5;">
+              *Jika Anda membeli produk e-book, akses link download akan dikirimkan secara terpisah atau dapat diakses via sistem.
+            </p>
+          </div>
+        `
+      });
+      console.log(`[EMAIL SUCCESS] Email invoice berhasil dikirim ke: ${recipientEmail}`);
+    } catch (emailError: any) {
+      console.error('[EMAIL ERROR]', emailError.message);
+    }
+  } else {
+    console.log('[WARNING] Email customer tidak ditemukan dalam payload');
   }
 }
 
