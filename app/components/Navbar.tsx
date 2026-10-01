@@ -9,19 +9,44 @@ import type { User } from '@supabase/supabase-js';
 export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Cek user saat ini
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       setUser(data.user);
+
+      // Cek apakah admin
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        setIsAdmin(profile?.role === 'admin');
+      }
+
       setLoading(false);
     });
 
     // Dengarkan perubahan login/logout
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         setUser(session?.user ?? null);
+
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+
+          setIsAdmin(profile?.role === 'admin');
+        } else {
+          setIsAdmin(false);
+        }
       }
     );
 
@@ -50,6 +75,14 @@ export default function Navbar() {
             <span className="text-sm text-gray-400">...</span>
           ) : user ? (
             <>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="text-sm bg-slate-800 text-white px-3 py-1.5 rounded-md hover:bg-slate-700 font-medium"
+                >
+                  🛠️ Admin
+                </Link>
+              )}
               <Link
                 href="/profile"
                 className="text-sm text-gray-700 hover:text-blue-600 font-medium"

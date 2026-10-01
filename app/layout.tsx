@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
-import Navbar from "./components/Navbar"; // ← Tambahan 1
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,9 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navbar /> {/* ← Tambahan 2 */}
-        
-        {children}
+        <Navbar />
+
+        <main className="flex-1">{children}</main>
+
+        <Footer />
 
         {/* Script Midtrans Snap Sandbox */}
         <Script
