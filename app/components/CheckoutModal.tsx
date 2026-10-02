@@ -7,6 +7,7 @@ import {
   formatRupiah,
   type ShippingZone,
 } from '@/lib/shipping';
+import { supabase } from '@/lib/supabase';
 
 type CheckoutModalProps = {
   book: {
@@ -36,7 +37,6 @@ export default function CheckoutModal({
   const isBoth = book.format === 'both';
 
   // STEP 1: pilih format (khusus untuk buku "both")
-  // Kalau bukan "both", langsung skip ke step 2
   const [step, setStep] = useState<1 | 2>(isBoth ? 1 : 2);
 
   // Format choice
@@ -48,12 +48,56 @@ export default function CheckoutModal({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
+  // Info user yang login (untuk auto-fill)
+  const [loggedInUser, setLoggedInUser] = useState<{
+    id: string;
+    name: string;
+    email: string;
+  } | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
   // Data pengiriman
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [province, setProvince] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
+
+  // ============================================
+  // AUTO-FILL: Cek user yang login
+  // ============================================
+  useEffect(() => {
+    async function checkUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        // Ambil nama dari profiles
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+
+        const userName =
+          profile?.full_name || user.email?.split('@')[0] || '';
+        const userEmail = user.email || '';
+
+        setLoggedInUser({
+          id: user.id,
+          name: userName,
+          email: userEmail,
+        });
+
+        // Auto-isi form
+        setName(userName);
+        setEmail(userEmail);
+      }
+
+      setLoadingUser(false);
+    }
+
+    checkUser();
+  }, []);
 
   // Harga terpilih
   const getSelectedPrice = () => {
@@ -151,9 +195,6 @@ export default function CheckoutModal({
     }
   }
 
-  // ============================================
-  // RENDER
-  // ============================================
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col">
@@ -338,6 +379,32 @@ export default function CheckoutModal({
                   </button>
                 )}
               </div>
+
+              {/* Badge user login (kalau login) */}
+              {!loadingUser && loggedInUser && (
+                <div className="p-4 bg-sky-50 border border-sky-200 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                      {loggedInUser.name?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-sky-700 uppercase mb-0.5">
+                        ✓ Login sebagai
+                      </p>
+                      <p className="font-bold text-slate-800 text-sm truncate">
+                        {loggedInUser.name}
+                      </p>
+                      <p className="text-xs text-slate-500 truncate">
+                        {loggedInUser.email}
+                      </p>
+                      <p className="text-xs text-sky-700 mt-2">
+                        💡 Data sudah terisi otomatis. Bisa diubah kalau mau
+                        kirim ke orang lain.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* DATA PEMBELI */}
               <div>
