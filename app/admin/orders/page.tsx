@@ -141,7 +141,7 @@ export default function AdminOrdersPage() {
           placeholder="Cari order ID, nama, email, atau judul buku..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
         />
       </div>
 

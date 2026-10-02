@@ -172,8 +172,8 @@ export default function TermsPage() {
               </p>
             </section>
 
-            <section className="bg-blue-50 border border-blue-200 rounded-xl p-6 mt-8">
-              <p className="text-sm text-blue-800">
+            <section className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 mt-8">
+              <p className="text-sm text-emerald-800">
                 <strong>Pertanyaan?</strong> Hubungi kami di{' '}
                 <Link href="/contact" className="underline">
                   halaman kontak
@@ -185,7 +185,7 @@ export default function TermsPage() {
           </div>
 
           <div className="mt-10 pt-6 border-t border-slate-100">
-            <Link href="/" className="text-sm text-blue-600 hover:underline">
+            <Link href="/" className="text-sm text-emerald-600 hover:underline">
               ← Kembali ke Beranda
             </Link>
           </div>

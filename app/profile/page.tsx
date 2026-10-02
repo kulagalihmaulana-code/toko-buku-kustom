@@ -91,7 +91,7 @@ export default function ProfilePage() {
         {/* Header Profil */}
         <div className="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl font-bold">
               {profile.full_name?.charAt(0).toUpperCase() || '?'}
             </div>
             <div className="flex-1">
@@ -125,7 +125,7 @@ export default function ProfilePage() {
             <p className="text-xs font-semibold text-slate-500 uppercase">
               Total Belanja
             </p>
-            <p className="text-2xl font-bold text-sky-600 mt-2">
+            <p className="text-2xl font-bold text-emerald-600 mt-2">
               Rp {stats.spent.toLocaleString('id-ID')}
             </p>
           </div>
@@ -146,7 +146,7 @@ export default function ProfilePage() {
               <p className="text-slate-500 text-sm">Belum ada pesanan</p>
               <Link
                 href="/"
-                className="inline-block mt-4 text-sm bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition"
+                className="inline-block mt-4 text-sm bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-medium transition"
               >
                 Mulai Belanja
               </Link>
@@ -189,7 +189,7 @@ export default function ProfilePage() {
                       <p className="font-bold text-slate-800">
                         Rp {Number(order.total_amount).toLocaleString('id-ID')}
                       </p>
-                      <p className="text-xs text-blue-600 mt-1">
+                      <p className="text-xs text-emerald-600 mt-1">
                         Lihat Detail →
                       </p>
                     </div>
@@ -201,8 +201,8 @@ export default function ProfilePage() {
         </div>
 
         {/* Info Tambahan */}
-        <div className="bg-blue-50 border border-blue-200 p-5 rounded-xl">
-          <p className="text-sm text-blue-800">
+        <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-xl">
+          <p className="text-sm text-emerald-800">
             💡 <strong>Tips:</strong> Simpan halaman ini sebagai bookmark. Anda
             bisa buka kapan saja untuk mengakses semua e-book yang sudah dibeli.
           </p>

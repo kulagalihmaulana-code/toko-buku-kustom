@@ -88,8 +88,8 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-            <p className="text-sm text-blue-800">
+          <div className="mt-4 p-4 bg-emerald-600 border border-emerald-200 rounded-xl">
+            <p className="text-sm text-emerald-800">
               💡 <strong>Untuk pertanyaan tentang pesanan tertentu</strong>,
               sertakan <strong>Order ID</strong> (contoh: <code className="text-xs bg-white px-1 py-0.5 rounded">BOOK-xxxx</code>) agar kami bisa bantu lebih cepat.
             </p>
@@ -122,7 +122,7 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
+        <Link href="/" className="text-sm text-emerald-600 hover:underline">
           ← Kembali ke Beranda
         </Link>
       </div>

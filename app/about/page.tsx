@@ -90,17 +90,17 @@ export default function AboutPage() {
               </p>
             </section>
 
-            <section className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <h2 className="text-xl font-bold text-blue-900 mb-3">
+            <section className="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-emerald-900 mb-3">
                 🤝 Ingin Bekerja Sama?
               </h2>
-              <p className="text-blue-800 text-sm mb-4">
+              <p className="text-emerald-800 text-sm mb-4">
                 Untuk penulis, penerbit, atau institusi yang ingin bekerja sama,
                 silakan hubungi kami.
               </p>
               <Link
                 href="/contact"
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+                className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
               >
                 Hubungi Kami →
               </Link>
@@ -110,7 +110,7 @@ export default function AboutPage() {
           <div className="mt-10 pt-6 border-t border-slate-100">
             <Link
               href="/"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-emerald-600 hover:underline"
             >
               ← Kembali ke Beranda
             </Link>

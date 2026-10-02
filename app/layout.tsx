@@ -16,8 +16,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Toko Buku Digital",
-  description: "Koleksi buku fisik & e-book berkualitas",
+  title: "Mustawa Publishing — Tempat Gagasan Mulia Mulai Dituliskan",
+  description:
+    "Platform penerbitan mandiri (self-publishing) profesional yang hadir sebagai wadah bagi para penulis untuk melahirkan karya-karya berkualitas, berbobot, dan menginspirasi dunia.",
+  keywords: [
+    "penerbit buku",
+    "self publishing",
+    "mustawa publishing",
+    "penerbitan mandiri",
+    "ISBN gratis",
+    "jual buku online",
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

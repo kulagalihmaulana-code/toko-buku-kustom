@@ -11,10 +11,18 @@ type Order = {
   customer_name: string;
   customer_email: string;
   total_amount: number;
+  subtotal: number | null;
   status: string;
   created_at: string;
-  shipping_address?: string;
-  tracking_number?: string;
+  tracking_number: string | null;
+  shipping_name: string | null;
+  shipping_phone: string | null;
+  shipping_address: string | null;
+  shipping_city: string | null;
+  shipping_province: string | null;
+  shipping_postal_code: string | null;
+  shipping_zone: string | null;
+  shipping_cost: number | null;
 };
 
 type OrderItem = {
@@ -40,7 +48,9 @@ export default function OrderDetailPage() {
   const [items, setItems] = useState<OrderItem[]>([]);
   const [trackingNumber, setTrackingNumber] = useState('');
   const [saving, setSaving] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     async function checkAndFetch() {
@@ -62,7 +72,6 @@ export default function OrderDetailPage() {
         return;
       }
 
-      // Ambil order
       const { data: orderData } = await supabase
         .from('orders')
         .select('*')
@@ -77,7 +86,6 @@ export default function OrderDetailPage() {
       setOrder(orderData);
       setTrackingNumber(orderData.tracking_number || '');
 
-      // Ambil order items
       const { data: itemsData } = await supabase
         .from('order_items')
         .select('*, books(title, author, format)')
@@ -93,6 +101,7 @@ export default function OrderDetailPage() {
   async function handleSaveTracking() {
     if (!trackingNumber.trim()) {
       setMessage('Nomor resi tidak boleh kosong');
+      setMessageType('error');
       return;
     }
 
@@ -106,12 +115,15 @@ export default function OrderDetailPage() {
 
     if (error) {
       setMessage('❌ Gagal simpan: ' + error.message);
+      setMessageType('error');
     } else {
       setMessage('✅ Nomor resi berhasil disimpan');
+      setMessageType('success');
       if (order) setOrder({ ...order, tracking_number: trackingNumber });
     }
 
     setSaving(false);
+    setTimeout(() => setMessage(''), 4000);
   }
 
   async function handleUpdateStatus(newStatus: string) {
@@ -125,12 +137,52 @@ export default function OrderDetailPage() {
 
     if (error) {
       setMessage('❌ Gagal update status: ' + error.message);
+      setMessageType('error');
     } else {
-      setMessage('✅ Status berhasil diupdate menjadi ' + newStatus);
+      setMessage('✅ Status berhasil diupdate');
+      setMessageType('success');
       if (order) setOrder({ ...order, status: newStatus });
     }
 
     setSaving(false);
+    setTimeout(() => setMessage(''), 4000);
+  }
+
+  async function handleSendTrackingEmail() {
+    if (!order || !order.tracking_number) {
+      setMessage('Simpan nomor resi terlebih dahulu');
+      setMessageType('error');
+      return;
+    }
+
+    setSendingEmail(true);
+    setMessage('');
+
+    try {
+      const res = await fetch('/api/notify-shipping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: order.order_id }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessage(
+          `✅ Email notifikasi resi terkirim ke ${order.customer_email}`
+        );
+        setMessageType('success');
+      } else {
+        setMessage(`❌ Gagal kirim email: ${data.error}`);
+        setMessageType('error');
+      }
+    } catch (err: any) {
+      setMessage(`❌ Error: ${err.message}`);
+      setMessageType('error');
+    }
+
+    setSendingEmail(false);
+    setTimeout(() => setMessage(''), 6000);
   }
 
   if (loading) {
@@ -147,7 +199,7 @@ export default function OrderDetailPage() {
         <p className="text-slate-500">Pesanan tidak ditemukan</p>
         <Link
           href="/admin/orders"
-          className="text-blue-600 hover:underline text-sm mt-4 inline-block"
+          className="text-emerald-600 hover:underline text-sm mt-4 inline-block"
         >
           ← Kembali ke Daftar Pesanan
         </Link>
@@ -159,6 +211,8 @@ export default function OrderDetailPage() {
     (item) =>
       item.books?.format === 'physical' || item.books?.format === 'both'
   );
+
+  const hasShippingInfo = !!order.shipping_address;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -174,10 +228,11 @@ export default function OrderDetailPage() {
         <p className="font-mono text-xs text-slate-500 mt-1">{order.order_id}</p>
       </div>
 
+      {/* Pesan */}
       {message && (
         <div
           className={`p-3 rounded-lg text-sm ${
-            message.startsWith('✅')
+            messageType === 'success'
               ? 'bg-green-50 text-green-700 border border-green-200'
               : 'bg-red-50 text-red-700 border border-red-200'
           }`}
@@ -216,13 +271,13 @@ export default function OrderDetailPage() {
           </div>
           <div>
             <p className="text-slate-500 text-xs">Total Pembayaran</p>
-            <p className="font-bold text-sky-600 mt-0.5">
+            <p className="font-bold text-emerald-600 mt-0.5">
               Rp {Number(order.total_amount).toLocaleString('id-ID')}
             </p>
           </div>
         </div>
 
-        {/* Update Status Buttons */}
+        {/* Update Status */}
         <div className="mt-4 pt-4 border-t border-slate-100">
           <p className="text-xs text-slate-500 mb-2">Ubah status:</p>
           <div className="flex gap-2 flex-wrap">
@@ -244,9 +299,43 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
+      {/* Rincian Biaya */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <h2 className="font-bold text-slate-800 mb-4">💰 Rincian Biaya</h2>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-slate-600">Subtotal Produk</span>
+            <span className="font-medium text-slate-800">
+              Rp{' '}
+              {Number(
+                order.subtotal || order.total_amount - (order.shipping_cost || 0)
+              ).toLocaleString('id-ID')}
+            </span>
+          </div>
+
+          {order.shipping_cost !== null && order.shipping_cost > 0 && (
+            <div className="flex justify-between">
+              <span className="text-slate-600">
+                Ongkos Kirim ({order.shipping_zone === 'jawa' ? 'Dalam Jawa' : 'Luar Jawa'})
+              </span>
+              <span className="font-medium text-slate-800">
+                Rp {Number(order.shipping_cost).toLocaleString('id-ID')}
+              </span>
+            </div>
+          )}
+
+          <div className="flex justify-between pt-2 border-t border-slate-100 font-bold">
+            <span className="text-slate-800">Total</span>
+            <span className="text-emerald-600">
+              Rp {Number(order.total_amount).toLocaleString('id-ID')}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Data Pembeli */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h2 className="font-bold text-slate-800 mb-4">Data Pembeli</h2>
+        <h2 className="font-bold text-slate-800 mb-4">👤 Data Pembeli</h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-slate-500 text-xs">Nama</p>
@@ -256,17 +345,58 @@ export default function OrderDetailPage() {
           </div>
           <div>
             <p className="text-slate-500 text-xs">Email</p>
-            <p className="font-medium text-slate-800 mt-0.5 break-all">
+            <a
+              href={`mailto:${order.customer_email}`}
+              className="font-medium text-emerald-600 hover:underline mt-0.5 block break-all"
+            >
               {order.customer_email}
-            </p>
+            </a>
           </div>
         </div>
       </div>
 
+      {/* Alamat Pengiriman */}
+      {hasShippingInfo && (
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2 className="font-bold text-slate-800 mb-4">
+            📦 Alamat Pengiriman
+          </h2>
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <p className="font-semibold text-slate-800">
+              {order.shipping_name || order.customer_name}
+            </p>
+            {order.shipping_phone && (
+              <p className="text-sm text-slate-600 mt-1">
+                📱 {order.shipping_phone}
+              </p>
+            )}
+            <p className="text-sm text-slate-700 mt-2 leading-relaxed">
+              {order.shipping_address}
+              <br />
+              {order.shipping_city}, {order.shipping_province}
+              {order.shipping_postal_code && ` ${order.shipping_postal_code}`}
+            </p>
+          </div>
+
+          {order.shipping_zone && (
+            <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <p className="text-xs text-emerald-700">
+                📍 Zona:{' '}
+                <strong>
+                  {order.shipping_zone === 'jawa'
+                    ? 'Dalam Pulau Jawa'
+                    : 'Luar Pulau Jawa'}
+                </strong>
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Item yang Dibeli */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <h2 className="font-bold text-slate-800 mb-4">
-          Item yang Dibeli ({items.length})
+          📚 Item yang Dibeli ({items.length})
         </h2>
         <div className="space-y-3">
           {items.map((item) => (
@@ -274,13 +404,14 @@ export default function OrderDetailPage() {
               key={item.id}
               className="p-4 bg-slate-50 rounded-lg border border-slate-100"
             >
-              <div className="flex justify-between items-start">
-                <div>
+              <div className="flex justify-between items-start gap-3">
+                <div className="flex-1">
                   <p className="font-semibold text-slate-800">
                     {item.books?.title || 'Buku'}
                   </p>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    {item.books?.author} • {item.books?.format}
+                    {item.books?.author} •{' '}
+                    <span className="uppercase">{item.books?.format}</span>
                   </p>
                 </div>
                 <div className="text-right">
@@ -299,16 +430,12 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {/* Input Resi (Kalau Ada Buku Fisik) */}
+      {/* Pengiriman Buku Fisik + Resi */}
       {hasPhysical && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div className="bg-white p-6 rounded-xl shadow-sm border-2 border-emerald-200">
           <h2 className="font-bold text-slate-800 mb-4">
-            📦 Pengiriman Buku Fisik
+            🚚 Pengiriman Buku Fisik
           </h2>
-          <p className="text-sm text-slate-500 mb-4">
-            Pesanan ini mencakup buku fisik. Masukkan nomor resi setelah
-            dikirim.
-          </p>
 
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Nomor Resi
@@ -319,28 +446,42 @@ export default function OrderDetailPage() {
               value={trackingNumber}
               onChange={(e) => setTrackingNumber(e.target.value)}
               placeholder="Contoh: JNE1234567890"
-              className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
             />
             <button
               onClick={handleSaveTracking}
               disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition disabled:opacity-50"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition disabled:opacity-50 whitespace-nowrap"
             >
-              {saving ? 'Menyimpan...' : 'Simpan'}
+              {saving ? 'Menyimpan...' : '💾 Simpan'}
             </button>
           </div>
 
           {order.tracking_number && (
-            <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-              <p className="text-xs text-emerald-700">
+            <div className="mt-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <p className="text-xs text-emerald-700 mb-2">
                 ✓ Resi saat ini: <strong>{order.tracking_number}</strong>
               </p>
+              <button
+                onClick={handleSendTrackingEmail}
+                disabled={sendingEmail}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded-lg transition disabled:opacity-50"
+              >
+                {sendingEmail
+                  ? 'Mengirim email...'
+                  : '📧 Kirim Email Notifikasi Resi ke Pembeli'}
+              </button>
             </div>
           )}
+
+          <p className="text-xs text-slate-400 mt-3">
+            ℹ️ Setelah resi disimpan, klik tombol di atas untuk kirim email ke
+            pembeli.
+          </p>
         </div>
       )}
 
-      {/* Link ke Portal Pesanan */}
+      {/* Portal Pesanan */}
       <div className="bg-slate-100 p-4 rounded-xl text-center">
         <p className="text-xs text-slate-500 mb-2">
           Pembeli bisa akses portal pesanan ini
@@ -348,7 +489,7 @@ export default function OrderDetailPage() {
         <Link
           href={`/orders/${order.order_id}`}
           target="_blank"
-          className="text-sm text-blue-600 hover:underline font-medium"
+          className="text-sm text-emerald-600 hover:underline font-medium"
         >
           Buka Portal Pesanan Publik →
         </Link>

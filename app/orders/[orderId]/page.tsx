@@ -97,7 +97,7 @@ export default async function OrderPortalPage({
                   Format: {book?.format || 'ebook'}
                 </p>
               </div>
-              <p className="text-base font-bold text-sky-600">
+              <p className="text-base font-bold text-emerald-600">
                 Rp {Number(order.total_amount).toLocaleString('id-ID')}
               </p>
             </div>
@@ -105,18 +105,18 @@ export default async function OrderPortalPage({
 
           {/* Akses E-Book (Jika Lunas & Ada Ebook) */}
           {isPaid && downloadUrl && (
-            <div className="mt-6 p-5 bg-blue-50 border border-blue-200 rounded-xl text-center">
-              <h3 className="font-bold text-blue-900 text-base mb-1">
+            <div className="mt-6 p-5 bg-emerald-600 border border-emerald-200 rounded-xl text-center">
+              <h3 className="font-bold text-emerald-900 text-base mb-1">
                 Akses File E-Book Anda
               </h3>
-              <p className="text-xs text-blue-700 mb-4">
+              <p className="text-xs text-emerald-700 mb-4">
                 Klik tombol di bawah ini untuk mengunduh e-book Anda.
               </p>
               <a
                 href={downloadUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-sm text-sm"
+                className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-sm text-sm"
               >
                 📥 Download E-Book (PDF)
               </a>
@@ -150,7 +150,7 @@ export default async function OrderPortalPage({
           </div>
           <Link
             href={`/register?email=${encodeURIComponent(order.customer_email)}`}
-            className="whitespace-nowrap bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-4 py-2.5 rounded-lg text-xs transition-colors"
+            className="whitespace-nowrap bg-emerald-500 hover:bg-sky-400 text-slate-950 font-bold px-4 py-2.5 rounded-lg text-xs transition-colors"
           >
             Buat Akun Gratis
           </Link>
