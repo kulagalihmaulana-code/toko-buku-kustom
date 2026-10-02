@@ -13,6 +13,34 @@ function formatRupiah(amount: number): string {
   return 'Rp ' + Number(amount).toLocaleString('id-ID');
 }
 
+// Helper: delay
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Helper: ambil order_items dengan retry
+async function getOrderItemsWithRetry(orderId: string, maxRetries = 5) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const { data: items } = await supabaseAdmin
+      .from('order_items')
+      .select('*')
+      .eq('order_id', orderId);
+
+    if (items && items.length > 0) {
+      return items;
+    }
+
+    console.log(
+      `[Webhook] order_items kosong (attempt ${attempt}/${maxRetries}), retry dalam 2 detik...`
+    );
+
+    // Tunggu 2 detik sebelum retry
+    await sleep(2000);
+  }
+
+  return null;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -29,36 +57,49 @@ export async function POST(req: Request) {
       );
     }
 
+    console.log(`[Webhook] Processing order: ${order_id}`);
+
     // 1. Update status order
     await supabaseAdmin
       .from('orders')
       .update({ status: 'paid' })
       .eq('order_id', order_id);
 
-    // 2. Ambil detail order + data pemesan + alamat pengiriman
+    // 2. Ambil data order
     const { data: orderData } = await supabaseAdmin
       .from('orders')
       .select('*')
       .eq('order_id', order_id)
       .single();
 
-    const { data: orderItems } = await supabaseAdmin
-      .from('order_items')
-      .select('*, books(*)')
-      .eq('order_id', order_id);
-
-    if (!orderItems || !orderData) {
+    if (!orderData) {
+      console.error(`[Webhook] Order tidak ditemukan: ${order_id}`);
       return NextResponse.json(
-        { error: 'Order detail tidak ditemukan' },
+        { error: 'Order tidak ditemukan' },
         { status: 404 }
       );
     }
+
+    // 3. Ambil order_items dengan RETRY
+    const orderItems = await getOrderItemsWithRetry(order_id);
+
+    if (!orderItems || orderItems.length === 0) {
+      console.error(
+        `[Webhook] GAGAL ambil order_items setelah retry: ${order_id}`
+      );
+      return NextResponse.json(
+        { error: 'Order items tidak ditemukan setelah retry' },
+        { status: 404 }
+      );
+    }
+
+    console.log(`[Webhook] Dapat ${orderItems.length} order items`);
 
     const downloadLinks: { bookTitle: string; url: string }[] = [];
     const physicalItems: { title: string }[] = [];
     let debugLog = '';
 
-    // 3. Looping item
+    // 4. Looping item
     for (const item of orderItems) {
       // Potong stok
       await supabaseAdmin.rpc('decrement_stock', {
@@ -66,29 +107,31 @@ export async function POST(req: Request) {
         quantity: item.quantity,
       });
 
-      // Ambil data buku
-      const bookData = Array.isArray(item.books) ? item.books[0] : item.books;
-      let filePath = bookData?.file_path;
-      let bookTitle = bookData?.title || 'Buku';
-      let bookFormat = bookData?.format || 'ebook';
+      // Ambil data buku dengan QUERY TERPISAH (lebih reliable dari join)
+      const { data: bookData, error: bookError } = await supabaseAdmin
+        .from('books')
+        .select('title, file_path, format')
+        .eq('id', item.book_id)
+        .single();
 
-      // Fallback query
-      if (!filePath && item.book_id) {
-        const { data: directBook } = await supabaseAdmin
-          .from('books')
-          .select('title, file_path, format')
-          .eq('id', item.book_id)
-          .single();
-
-        if (directBook) {
-          filePath = directBook.file_path;
-          bookTitle = directBook.title;
-          bookFormat = directBook.format;
-        }
+      if (bookError || !bookData) {
+        debugLog += `[Buku tidak ditemukan: ${item.book_id}] `;
+        continue;
       }
 
+      const filePath = bookData.file_path;
+      const bookTitle = bookData.title || 'Buku';
+
+      // PENTING: pakai format_type dari order_items (pilihan pembeli)
+      // fallback ke book.format kalau format_type kosong
+      const effectiveFormat = item.format_type || bookData.format || 'ebook';
+
+      console.log(
+        `[Webhook] Item: ${bookTitle}, format_type: ${item.format_type}, effective: ${effectiveFormat}, file: ${filePath}`
+      );
+
       // ============ EBOOK ============
-      if (bookFormat === 'ebook' || bookFormat === 'both') {
+      if (effectiveFormat === 'ebook' || effectiveFormat === 'both') {
         if (!filePath) {
           debugLog += `[File PDF tidak ada untuk: ${bookTitle}] `;
         } else {
@@ -102,14 +145,21 @@ export async function POST(req: Request) {
               bookTitle,
               url: signedData.signedUrl,
             });
+            console.log(`[Webhook] ✓ Signed URL dibuat untuk: ${bookTitle}`);
           } else {
-            debugLog += `[Err: ${signedError?.message || 'Unknown'}, Path: ${filePath}] `;
+            debugLog += `[Err: ${
+              signedError?.message || 'Unknown'
+            }, Path: ${filePath}] `;
+            console.error(
+              `[Webhook] Gagal buat signed URL:`,
+              signedError
+            );
           }
         }
       }
 
       // ============ BUKU FISIK ============
-      if (bookFormat === 'physical' || bookFormat === 'both') {
+      if (effectiveFormat === 'physical' || effectiveFormat === 'both') {
         physicalItems.push({ title: bookTitle });
       }
     }
@@ -117,6 +167,10 @@ export async function POST(req: Request) {
     // ============ SUSUN EMAIL ============
     const hasEbook = downloadLinks.length > 0;
     const hasPhysical = physicalItems.length > 0;
+
+    console.log(
+      `[Webhook] Email: ${downloadLinks.length} ebook, ${physicalItems.length} fisik, debug: ${debugLog}`
+    );
 
     // Section ebook
     const ebookSection = hasEbook
@@ -140,7 +194,7 @@ export async function POST(req: Request) {
             .join('')}
         </div>
       `
-      : debugLog && hasEbook === false && !hasPhysical
+      : debugLog && !hasPhysical
       ? `
         <div style="background-color: #fef2f2; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #fecaca;">
           <p style="color: #991b1b; margin: 0; font-weight: bold; font-size: 14px;">⚠️ Link Download Belum Tersedia</p>
@@ -183,7 +237,9 @@ export async function POST(req: Request) {
       ? 'Pembayaran Anda telah kami terima. E-book siap diunduh dan buku fisik akan segera dikirim.'
       : hasEbook
       ? 'Pembayaran Anda telah kami terima. E-book Anda siap diunduh.'
-      : 'Pembayaran Anda telah kami terima. Buku fisik akan segera dikirim.';
+      : hasPhysical
+      ? 'Pembayaran Anda telah kami terima. Buku fisik akan segera dikirim.'
+      : 'Pembayaran Anda telah kami terima.';
 
     // ============ KIRIM EMAIL ============
     const baseUrl =
