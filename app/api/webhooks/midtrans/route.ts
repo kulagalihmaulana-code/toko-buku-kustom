@@ -243,7 +243,7 @@ export async function POST(req: Request) {
 
     // ============ KIRIM EMAIL ============
     const baseUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || 'https://tokobuku.com';
+      process.env.NEXT_PUBLIC_SITE_URL || 'https://toko-buku-kustom-t4mr.vercel.app';
 
     await resend.emails.send({
       from: 'Mustawa Publishing <onboarding@resend.dev>',

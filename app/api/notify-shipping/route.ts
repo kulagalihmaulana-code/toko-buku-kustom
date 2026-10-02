@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     }
 
     const baseUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || 'https://tokobuku.com';
+      process.env.NEXT_PUBLIC_SITE_URL || 'https://toko-buku-kustom-t4mr.vercel.app';
 
     // Kirim email
     const { error: emailError } = await resend.emails.send({
