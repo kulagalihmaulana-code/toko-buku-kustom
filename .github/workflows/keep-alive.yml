@@ -1,0 +1,29 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Setiap 6 jam (00:00, 06:00, 12:00, 18:00 UTC)
+    # = 07:00, 13:00, 19:00, 01:00 WIB
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Homepage
+        run: |
+          curl -s "https://toko-buku-kustom-t4mr.vercel.app/" -o /dev/null -w "Homepage: %{http_code}\n"
+
+      - name: Ping Katalog (query database)
+        run: |
+          curl -s "https://toko-buku-kustom-t4mr.vercel.app/katalog" -o /dev/null -w "Katalog: %{http_code}\n"
+
+      - name: Ping Supabase REST API
+        run: |
+          curl -s "${{ secrets.SUPABASE_URL }}/rest/v1/books?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -o /dev/null -w "Supabase API: %{http_code}\n"
+
+      - name: Log Timestamp
+        run: echo "Keep-alive ping completed at $(date)"
