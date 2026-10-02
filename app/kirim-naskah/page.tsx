@@ -31,12 +31,11 @@ export default function KirimNaskahPage() {
     setUploadProgress('');
 
     try {
-      // Validasi file
       if (!manuscriptFile) {
         throw new Error('File naskah wajib diunggah');
       }
 
-      const maxSize = 20 * 1024 * 1024; // 20 MB
+      const maxSize = 20 * 1024 * 1024;
       if (manuscriptFile.size > maxSize) {
         throw new Error('Ukuran file maksimal 20 MB');
       }
@@ -47,7 +46,6 @@ export default function KirimNaskahPage() {
         throw new Error('Format file harus .doc, .docx, atau .pdf');
       }
 
-      // 1. Upload naskah
       setUploadProgress('Mengunggah naskah...');
       const timestamp = Date.now();
       const safeName = manuscriptFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -64,7 +62,6 @@ export default function KirimNaskahPage() {
         throw new Error('Gagal upload naskah: ' + uploadError.message);
       }
 
-      // 2. Simpan data ke tabel submissions
       setUploadProgress('Menyimpan data...');
       const { data: submission, error: insertError } = await supabase
         .from('submissions')
@@ -87,7 +84,6 @@ export default function KirimNaskahPage() {
         throw new Error('Gagal menyimpan data: ' + insertError.message);
       }
 
-      // 3. Sukses
       setSubmissionCode(submission.submission_code);
       setSuccess(true);
       setUploadProgress('');
@@ -213,15 +209,26 @@ export default function KirimNaskahPage() {
   ];
 
   const kategori = [
-    'Fiksi (Novel, Cerpen, Puisi)',
-    'Non-Fiksi (Akademik, Referensi)',
-    'Pendidikan (Buku Ajar, Modul)',
-    'Bisnis & Ekonomi',
-    'Agama & Spiritual',
-    'Pengembangan Diri',
-    'Anak & Remaja',
-    'Biografi & Memoar',
-    'Lainnya',
+    '1. Khazanah Islami — Akidah (Tauhid, Iman, Teologi)',
+    '1. Khazanah Islami — Fikih (Ibadah, Muamalah)',
+    '1. Khazanah Islami — Tasawuf (Tazkiyatun Nafs, Akhlak)',
+    '1. Khazanah Islami — Filsafat Islam (Mantiq, Pemikiran)',
+    '2. Pengembangan Diri Islami — Produktivitas Muslim',
+    '2. Pengembangan Diri Islami — Manajemen Waktu Islami',
+    '2. Pengembangan Diri Islami — Psikologi Islami',
+    '2. Pengembangan Diri Islami — Self-Development',
+    '3. Akademik & Pendidikan — Buku Ajar (Dosen/Sekolah)',
+    '3. Akademik & Pendidikan — Buku Referensi',
+    '3. Akademik & Pendidikan — Hasil Penelitian',
+    '3. Akademik & Pendidikan — Konversi Tesis/Disertasi',
+    '4. Biografi & Kisah Nyata — Biografi Tokoh Islam',
+    '4. Biografi & Kisah Nyata — Memoar Ulama/Aktivis',
+    '4. Biografi & Kisah Nyata — Perjalanan Hidup',
+    '4. Biografi & Kisah Nyata — Sejarah Lokal',
+    '5. Anak & Remaja Islami — Buku Cerita Anak',
+    '5. Anak & Remaja Islami — Komik Islami',
+    '5. Anak & Remaja Islami — Buku Aktivitas',
+    '5. Anak & Remaja Islami — Novel Remaja Islami',
   ];
 
   return (
@@ -275,13 +282,13 @@ export default function KirimNaskahPage() {
           </div>
         </section>
 
-        {/* Syarat & Kategori */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Syarat Naskah */}
+        <section>
           <div className="bg-white p-6 rounded-2xl border border-slate-200">
             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
               📋 Syarat Naskah
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {syarat.map((item, i) => (
                 <li key={i} className="flex gap-2 text-sm">
                   <span className="text-emerald-500 flex-shrink-0 font-bold mt-0.5">
@@ -292,19 +299,87 @@ export default function KirimNaskahPage() {
               ))}
             </ul>
           </div>
+        </section>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200">
-            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-              🏷️ Kategori yang Kami Terima
-            </h3>
-            <ul className="space-y-1.5">
-              {kategori.map((item, i) => (
-                <li key={i} className="text-sm text-slate-700 py-1">
-                  • {item}
-                </li>
-              ))}
-            </ul>
+        {/* KATEGORI VISUAL */}
+        <section className="bg-white p-6 rounded-2xl border border-slate-200">
+          <h3 className="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2">
+            🏷️ Kategori yang Kami Terima
+          </h3>
+          <p className="text-sm text-slate-500 mb-6">
+            Mustawa Publishing menerima naskah dari 5 kategori utama:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 1. Khazanah Islami */}
+            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+              <h4 className="font-bold text-emerald-900 text-sm mb-2">
+                1. 📿 KHAZANAH ISLAMI
+              </h4>
+              <ul className="space-y-1 text-xs text-emerald-800">
+                <li>• Akidah — Tauhid, Iman, Teologi</li>
+                <li>• Fikih — Ibadah, Muamalah</li>
+                <li>• Tasawuf — Tazkiyatun Nafs, Akhlak</li>
+                <li>• Filsafat Islam — Mantiq, Pemikiran</li>
+              </ul>
+            </div>
+
+            {/* 2. Pengembangan Diri Islami */}
+            <div className="p-4 bg-sky-50 rounded-xl border border-sky-200">
+              <h4 className="font-bold text-sky-900 text-sm mb-2">
+                2. 🚀 PENGEMBANGAN DIRI ISLAMI
+              </h4>
+              <ul className="space-y-1 text-xs text-sky-800">
+                <li>• Produktivitas Muslim</li>
+                <li>• Manajemen Waktu Islami</li>
+                <li>• Psikologi Islami</li>
+                <li>• Self-Development</li>
+              </ul>
+            </div>
+
+            {/* 3. Akademik & Pendidikan */}
+            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+              <h4 className="font-bold text-amber-900 text-sm mb-2">
+                3. 🎓 AKADEMIK & PENDIDIKAN
+              </h4>
+              <ul className="space-y-1 text-xs text-amber-800">
+                <li>• Buku Ajar (Dosen/Sekolah)</li>
+                <li>• Buku Referensi</li>
+                <li>• Hasil Penelitian</li>
+                <li>• Konversi Tesis/Disertasi</li>
+              </ul>
+            </div>
+
+            {/* 4. Biografi & Kisah Nyata */}
+            <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
+              <h4 className="font-bold text-purple-900 text-sm mb-2">
+                4. 👤 BIOGRAFI & KISAH NYATA
+              </h4>
+              <ul className="space-y-1 text-xs text-purple-800">
+                <li>• Biografi Tokoh Islam</li>
+                <li>• Memoar Ulama/Aktivis</li>
+                <li>• Perjalanan Hidup</li>
+                <li>• Sejarah Lokal</li>
+              </ul>
+            </div>
+
+            {/* 5. Anak & Remaja Islami */}
+            <div className="p-4 bg-rose-50 rounded-xl border border-rose-200 md:col-span-2">
+              <h4 className="font-bold text-rose-900 text-sm mb-2">
+                5. 👶 ANAK & REMAJA ISLAMI
+              </h4>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-rose-800">
+                <li>• Buku Cerita Anak</li>
+                <li>• Komik Islami</li>
+                <li>• Buku Aktivitas</li>
+                <li>• Novel Remaja Islami</li>
+              </ul>
+            </div>
           </div>
+
+          <p className="text-xs text-slate-500 mt-4 text-center">
+            📝 Naskah di luar kategori ini tetap bisa dipertimbangkan — kirim via email.
+          </p>
         </section>
 
         {/* Info Penting */}
@@ -325,9 +400,7 @@ export default function KirimNaskahPage() {
           </div>
         </section>
 
-        {/* ============================================ */}
         {/* FORM SUBMISSION */}
-        {/* ============================================ */}
         <section
           id="form"
           className="bg-white p-6 sm:p-10 rounded-2xl shadow-sm border-2 border-emerald-200"
@@ -450,11 +523,76 @@ export default function KirimNaskahPage() {
                       className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     >
                       <option value="">-- Pilih kategori --</option>
-                      {kategori.map((k, i) => (
-                        <option key={i} value={k}>
-                          {k}
+                      <optgroup label="1. Khazanah Islami">
+                        <option value="1. Khazanah Islami — Akidah (Tauhid, Iman, Teologi)">
+                          📿 Akidah (Tauhid, Iman, Teologi)
                         </option>
-                      ))}
+                        <option value="1. Khazanah Islami — Fikih (Ibadah, Muamalah)">
+                          📿 Fikih (Ibadah, Muamalah)
+                        </option>
+                        <option value="1. Khazanah Islami — Tasawuf (Tazkiyatun Nafs, Akhlak)">
+                          📿 Tasawuf (Tazkiyatun Nafs, Akhlak)
+                        </option>
+                        <option value="1. Khazanah Islami — Filsafat Islam (Mantiq, Pemikiran)">
+                          📿 Filsafat Islam (Mantiq, Pemikiran)
+                        </option>
+                      </optgroup>
+                      <optgroup label="2. Pengembangan Diri Islami">
+                        <option value="2. Pengembangan Diri Islami — Produktivitas Muslim">
+                          🚀 Produktivitas Muslim
+                        </option>
+                        <option value="2. Pengembangan Diri Islami — Manajemen Waktu Islami">
+                          🚀 Manajemen Waktu Islami
+                        </option>
+                        <option value="2. Pengembangan Diri Islami — Psikologi Islami">
+                          🚀 Psikologi Islami
+                        </option>
+                        <option value="2. Pengembangan Diri Islami — Self-Development">
+                          🚀 Self-Development
+                        </option>
+                      </optgroup>
+                      <optgroup label="3. Akademik & Pendidikan">
+                        <option value="3. Akademik & Pendidikan — Buku Ajar (Dosen/Sekolah)">
+                          🎓 Buku Ajar (Dosen/Sekolah)
+                        </option>
+                        <option value="3. Akademik & Pendidikan — Buku Referensi">
+                          🎓 Buku Referensi
+                        </option>
+                        <option value="3. Akademik & Pendidikan — Hasil Penelitian">
+                          🎓 Hasil Penelitian
+                        </option>
+                        <option value="3. Akademik & Pendidikan — Konversi Tesis/Disertasi">
+                          🎓 Konversi Tesis/Disertasi
+                        </option>
+                      </optgroup>
+                      <optgroup label="4. Biografi & Kisah Nyata">
+                        <option value="4. Biografi & Kisah Nyata — Biografi Tokoh Islam">
+                          👤 Biografi Tokoh Islam
+                        </option>
+                        <option value="4. Biografi & Kisah Nyata — Memoar Ulama/Aktivis">
+                          👤 Memoar Ulama/Aktivis
+                        </option>
+                        <option value="4. Biografi & Kisah Nyata — Perjalanan Hidup">
+                          👤 Perjalanan Hidup
+                        </option>
+                        <option value="4. Biografi & Kisah Nyata — Sejarah Lokal">
+                          👤 Sejarah Lokal
+                        </option>
+                      </optgroup>
+                      <optgroup label="5. Anak & Remaja Islami">
+                        <option value="5. Anak & Remaja Islami — Buku Cerita Anak">
+                          👶 Buku Cerita Anak
+                        </option>
+                        <option value="5. Anak & Remaja Islami — Komik Islami">
+                          👶 Komik Islami
+                        </option>
+                        <option value="5. Anak & Remaja Islami — Buku Aktivitas">
+                          👶 Buku Aktivitas
+                        </option>
+                        <option value="5. Anak & Remaja Islami — Novel Remaja Islami">
+                          👶 Novel Remaja Islami
+                        </option>
+                      </optgroup>
                     </select>
                   </div>
 
@@ -499,7 +637,9 @@ export default function KirimNaskahPage() {
                 <input
                   type="file"
                   accept=".doc,.docx,.pdf"
-                  onChange={(e) => setManuscriptFile(e.target.files?.[0] || null)}
+                  onChange={(e) =>
+                    setManuscriptFile(e.target.files?.[0] || null)
+                  }
                   className="hidden"
                   id="manuscript-input"
                 />
