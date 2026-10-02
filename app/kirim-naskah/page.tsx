@@ -96,9 +96,7 @@ export default function KirimNaskahPage() {
     }
   }
 
-  // ============================================
   // TAMPILAN SUKSES
-  // ============================================
   if (success) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
@@ -161,9 +159,7 @@ export default function KirimNaskahPage() {
     );
   }
 
-  // ============================================
   // TAMPILAN FORM
-  // ============================================
   const alurPenerbitan = [
     {
       step: '01',
@@ -206,29 +202,6 @@ export default function KirimNaskahPage() {
     'Sinopsis (150-300 kata)',
     'Isi naskah utuh (minimal 60 halaman)',
     'Bebas dari plagiarisme',
-  ];
-
-  const kategori = [
-    '1. Khazanah Islami — Akidah (Tauhid, Iman, Teologi)',
-    '1. Khazanah Islami — Fikih (Ibadah, Muamalah)',
-    '1. Khazanah Islami — Tasawuf (Tazkiyatun Nafs, Akhlak)',
-    '1. Khazanah Islami — Filsafat Islam (Mantiq, Pemikiran)',
-    '2. Pengembangan Diri Islami — Produktivitas Muslim',
-    '2. Pengembangan Diri Islami — Manajemen Waktu Islami',
-    '2. Pengembangan Diri Islami — Psikologi Islami',
-    '2. Pengembangan Diri Islami — Self-Development',
-    '3. Akademik & Pendidikan — Buku Ajar (Dosen/Sekolah)',
-    '3. Akademik & Pendidikan — Buku Referensi',
-    '3. Akademik & Pendidikan — Hasil Penelitian',
-    '3. Akademik & Pendidikan — Konversi Tesis/Disertasi',
-    '4. Biografi & Kisah Nyata — Biografi Tokoh Islam',
-    '4. Biografi & Kisah Nyata — Memoar Ulama/Aktivis',
-    '4. Biografi & Kisah Nyata — Perjalanan Hidup',
-    '4. Biografi & Kisah Nyata — Sejarah Lokal',
-    '5. Anak & Remaja Islami — Buku Cerita Anak',
-    '5. Anak & Remaja Islami — Komik Islami',
-    '5. Anak & Remaja Islami — Buku Aktivitas',
-    '5. Anak & Remaja Islami — Novel Remaja Islami',
   ];
 
   return (
@@ -317,10 +290,10 @@ export default function KirimNaskahPage() {
                 1. 📿 KHAZANAH ISLAMI
               </h4>
               <ul className="space-y-1 text-xs text-emerald-800">
-                <li>• Akidah — Tauhid, Iman, Teologi</li>
-                <li>• Fikih — Ibadah, Muamalah</li>
-                <li>• Tasawuf — Tazkiyatun Nafs, Akhlak</li>
-                <li>• Filsafat Islam — Mantiq, Pemikiran</li>
+                <li>• Akidah</li>
+                <li>• Fikih & Ushul Fikih</li>
+                <li>• Tasawuf</li>
+                <li>• Filsafat & Pemikiran Islam</li>
               </ul>
             </div>
 
@@ -378,7 +351,8 @@ export default function KirimNaskahPage() {
           </div>
 
           <p className="text-xs text-slate-500 mt-4 text-center">
-            📝 Naskah di luar kategori ini tetap bisa dipertimbangkan — kirim via email.
+            📝 Naskah di luar kategori ini tetap bisa dipertimbangkan — kirim
+            via email.
           </p>
         </section>
 
@@ -524,17 +498,17 @@ export default function KirimNaskahPage() {
                     >
                       <option value="">-- Pilih kategori --</option>
                       <optgroup label="1. Khazanah Islami">
-                        <option value="1. Khazanah Islami — Akidah (Tauhid, Iman, Teologi)">
-                          📿 Akidah (Tauhid, Iman, Teologi)
+                        <option value="1. Khazanah Islami — Akidah">
+                          📿 Akidah
                         </option>
-                        <option value="1. Khazanah Islami — Fikih (Ibadah, Muamalah)">
-                          📿 Fikih (Ibadah, Muamalah)
+                        <option value="1. Khazanah Islami — Fikih & Ushul Fikih">
+                          📿 Fikih & Ushul Fikih
                         </option>
-                        <option value="1. Khazanah Islami — Tasawuf (Tazkiyatun Nafs, Akhlak)">
-                          📿 Tasawuf (Tazkiyatun Nafs, Akhlak)
+                        <option value="1. Khazanah Islami — Tasawuf">
+                          📿 Tasawuf
                         </option>
-                        <option value="1. Khazanah Islami — Filsafat Islam (Mantiq, Pemikiran)">
-                          📿 Filsafat Islam (Mantiq, Pemikiran)
+                        <option value="1. Khazanah Islami — Filsafat & Pemikiran Islam">
+                          📿 Filsafat & Pemikiran Islam
                         </option>
                       </optgroup>
                       <optgroup label="2. Pengembangan Diri Islami">
