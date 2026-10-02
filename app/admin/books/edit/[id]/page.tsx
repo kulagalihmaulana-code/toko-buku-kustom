@@ -30,7 +30,7 @@ export default function EditBookPage() {
   const [stock, setStock] = useState('');
 
   // Harga
-  const [price, setPrice] = useState(''); // untuk ebook / physical saja
+  const [price, setPrice] = useState('');
   const [priceEbook, setPriceEbook] = useState('');
   const [pricePhysical, setPricePhysical] = useState('');
   const [priceBundle, setPriceBundle] = useState('');
@@ -129,6 +129,19 @@ export default function EditBookPage() {
         }
       }
 
+      // Hitung nilai SEBELUM blok if (biar TS tidak menyempitkan tipe)
+      const mainPrice =
+        format === 'both' ? Number(priceEbook) : Number(price);
+      const priceEbookValue = format === 'both' ? Number(priceEbook) : null;
+      const pricePhysicalValue =
+        format === 'both' ? Number(pricePhysical) : null;
+      const priceBundleValue =
+        format === 'both' ? Number(priceBundle) : null;
+      const stockValue =
+        format === 'physical' || format === 'both'
+          ? Number(stock) || 0
+          : null;
+
       let coverUrl = currentCover;
       let filePath = currentFile;
 
@@ -166,10 +179,6 @@ export default function EditBookPage() {
         filePath = pdfName;
       }
 
-      // Hitung harga utama
-      const mainPrice =
-        format === 'both' ? Number(priceEbook) : Number(price);
-
       // Update
       setUploadProgress('Menyimpan perubahan...');
       const { error: updateError } = await supabase
@@ -187,14 +196,11 @@ export default function EditBookPage() {
             : null,
           book_size: bookSize || null,
           price: mainPrice,
-          price_ebook: format === 'both' ? Number(priceEbook) : null,
-          price_physical: format === 'both' ? Number(pricePhysical) : null,
-          price_bundle: format === 'both' ? Number(priceBundle) : null,
+          price_ebook: priceEbookValue,
+          price_physical: pricePhysicalValue,
+          price_bundle: priceBundleValue,
           format,
-          stock:
-            format === 'physical' || format === 'both'
-              ? Number(stock) || 0
-              : null,
+          stock: stockValue,
           cover_url: coverUrl,
           file_path: filePath,
         })
@@ -538,7 +544,7 @@ export default function EditBookPage() {
               </label>
               <input
                 type="number"
-                required={format !== 'both'}
+                required
                 min="0"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}

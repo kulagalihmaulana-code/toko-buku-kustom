@@ -35,12 +35,11 @@ function NewBookForm() {
   const [uploadProgress, setUploadProgress] = useState('');
 
   // 3 kolom harga (untuk format "both")
-  const [price, setPrice] = useState(''); // harga untuk format ebook / physical (single)
+  const [price, setPrice] = useState('');
   const [priceEbook, setPriceEbook] = useState('');
   const [pricePhysical, setPricePhysical] = useState('');
   const [priceBundle, setPriceBundle] = useState('');
 
-  // Cek admin & load submission
   useEffect(() => {
     async function checkAdmin() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -86,7 +85,6 @@ function NewBookForm() {
     checkAdmin();
   }, [router, fromSubmission]);
 
-  // Auto-hitung harga bundle dengan diskon 10% (opsional)
   function handlePriceChange(field: string, value: string) {
     if (field === 'price') setPrice(value);
     if (field === 'ebook') setPriceEbook(value);
@@ -128,6 +126,19 @@ function NewBookForm() {
         }
       }
 
+      // Hitung semua nilai SEBELUM blok if (biar TS tidak menyempitkan tipe)
+      const mainPrice =
+        format === 'both' ? Number(priceEbook) : Number(price);
+      const priceEbookValue = format === 'both' ? Number(priceEbook) : null;
+      const pricePhysicalValue =
+        format === 'both' ? Number(pricePhysical) : null;
+      const priceBundleValue =
+        format === 'both' ? Number(priceBundle) : null;
+      const stockValue =
+        format === 'physical' || format === 'both'
+          ? Number(stock) || 0
+          : null;
+
       let coverUrl = null;
       let filePath = null;
 
@@ -165,24 +176,17 @@ function NewBookForm() {
         filePath = pdfName;
       }
 
-      // Hitung harga utama (untuk ditampilkan di katalog)
-      const mainPrice =
-        format === 'both' ? Number(priceEbook) : Number(price);
-
       setUploadProgress('Menyimpan data buku...');
       const { error: insertError } = await supabase.from('books').insert({
         title,
         author,
         description,
-        price: mainPrice, // harga utama (default untuk katalog)
-        price_ebook: format === 'both' ? Number(priceEbook) : null,
-        price_physical: format === 'both' ? Number(pricePhysical) : null,
-        price_bundle: format === 'both' ? Number(priceBundle) : null,
+        price: mainPrice,
+        price_ebook: priceEbookValue,
+        price_physical: pricePhysicalValue,
+        price_bundle: priceBundleValue,
         format,
-        stock:
-          format === 'physical' || format === 'both'
-            ? Number(stock) || 0
-            : null,
+        stock: stockValue,
         cover_url: coverUrl,
         file_path: filePath,
         category: category || null,
@@ -229,9 +233,7 @@ function NewBookForm() {
     );
   }
 
-  // Hitung diskon bundle
-  const sumSingle =
-    Number(priceEbook || 0) + Number(pricePhysical || 0);
+  const sumSingle = Number(priceEbook || 0) + Number(pricePhysical || 0);
   const bundleDiscount =
     sumSingle > 0 && Number(priceBundle) > 0
       ? sumSingle - Number(priceBundle)
@@ -239,7 +241,6 @@ function NewBookForm() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
       <div>
         <Link
           href={submissionId ? `/admin/naskah/${submissionId}` : '/admin/books'}
@@ -422,43 +423,39 @@ function NewBookForm() {
             🎯 Format Buku
           </h3>
 
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {(
-                [
-                  { value: 'ebook', label: 'E-Book Saja', icon: '📱' },
-                  { value: 'physical', label: 'Fisik Saja', icon: '📦' },
-                  { value: 'both', label: 'Keduanya', icon: '📚' },
-                ] as const
-              ).map((opt) => (
-                <label
-                  key={opt.value}
-                  className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition ${
-                    format === opt.value
-                      ? 'border-emerald-500 bg-emerald-50'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="format"
-                    value={opt.value}
-                    checked={format === opt.value}
-                    onChange={() => setFormat(opt.value)}
-                    className="accent-emerald-600"
-                  />
-                  <div>
-                    <p className="font-semibold text-slate-800 text-sm">
-                      {opt.icon} {opt.label}
-                    </p>
-                  </div>
-                </label>
-              ))}
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {(
+              [
+                { value: 'ebook', label: 'E-Book Saja', icon: '📱' },
+                { value: 'physical', label: 'Fisik Saja', icon: '📦' },
+                { value: 'both', label: 'Keduanya', icon: '📚' },
+              ] as const
+            ).map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition ${
+                  format === opt.value
+                    ? 'border-emerald-500 bg-emerald-50'
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="format"
+                  value={opt.value}
+                  checked={format === opt.value}
+                  onChange={() => setFormat(opt.value)}
+                  className="accent-emerald-600"
+                />
+                <p className="font-semibold text-slate-800 text-sm">
+                  {opt.icon} {opt.label}
+                </p>
+              </label>
+            ))}
           </div>
         </div>
 
-        {/* HARGA — DINAMIS SESUAI FORMAT */}
+        {/* HARGA */}
         <div>
           <h3 className="font-bold text-slate-800 text-sm mb-3 pb-2 border-b border-slate-100">
             💰 Harga
@@ -526,7 +523,6 @@ function NewBookForm() {
                 </div>
               </div>
 
-              {/* Preview Diskon */}
               {sumSingle > 0 && Number(priceBundle) > 0 && (
                 <div
                   className={`p-3 rounded-lg border ${
@@ -549,7 +545,7 @@ function NewBookForm() {
                           Rp {bundleDiscount.toLocaleString('id-ID')}
                         </strong>{' '}
                         ({Math.round((bundleDiscount / sumSingle) * 100)}%) jika
-                        ambil bundle dibanding beli terpisah.
+                        ambil bundle.
                       </>
                     ) : (
                       <>
@@ -568,7 +564,7 @@ function NewBookForm() {
               </label>
               <input
                 type="number"
-                required={format !== 'both'}
+                required
                 min="0"
                 value={price}
                 onChange={(e) => handlePriceChange('price', e.target.value)}
