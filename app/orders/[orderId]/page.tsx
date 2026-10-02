@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import OrderSignupBanner from '@/app/components/OrderSignupBanner';
 
 // Inisialisasi Supabase Admin Client
 const supabaseAdmin = createClient(
@@ -43,8 +44,7 @@ export default async function OrderPortalPage({
     book?.file_path &&
     (book.format === 'ebook' || book.format === 'both')
   ) {
-    const { data: signedData } = await supabaseAdmin
-      .storage
+    const { data: signedData } = await supabaseAdmin.storage
       .from('ebooks')
       .createSignedUrl(book.file_path, 86400); // Masa berlaku 24 jam
 
@@ -65,7 +65,9 @@ export default async function OrderPortalPage({
               <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
                 ID Pesanan
               </p>
-              <h1 className="text-lg font-bold text-slate-800">{order.order_id}</h1>
+              <h1 className="text-lg font-bold text-slate-800">
+                {order.order_id}
+              </h1>
             </div>
             <div>
               <span
@@ -84,8 +86,10 @@ export default async function OrderPortalPage({
           <div className="space-y-4">
             <p className="text-sm text-slate-500">
               Pembeli:{' '}
-              <span className="font-medium text-slate-700">{order.customer_name}</span> (
-              {order.customer_email})
+              <span className="font-medium text-slate-700">
+                {order.customer_name}
+              </span>{' '}
+              ({order.customer_email})
             </p>
 
             <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 flex justify-between items-center">
@@ -105,7 +109,7 @@ export default async function OrderPortalPage({
 
           {/* Akses E-Book (Jika Lunas & Ada Ebook) */}
           {isPaid && downloadUrl && (
-            <div className="mt-6 p-5 bg-emerald-600 border border-emerald-200 rounded-xl text-center">
+            <div className="mt-6 p-5 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
               <h3 className="font-bold text-emerald-900 text-base mb-1">
                 Akses File E-Book Anda
               </h3>
@@ -124,37 +128,22 @@ export default async function OrderPortalPage({
           )}
 
           {/* Akses Fisik (Jika Ada Produk Fisik) */}
-          {isPaid && (book?.format === 'physical' || book?.format === 'both') && (
-            <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-              <h4 className="font-semibold text-emerald-900 text-sm">
-                📦 Pengiriman Buku Fisik
-              </h4>
-              <p className="text-xs text-emerald-700 mt-1">
-                Pesanan Anda sedang disiapkan oleh tim logistik. Nomor resi pengiriman
-                akan dikirimkan via email.
-              </p>
-            </div>
-          )}
+          {isPaid &&
+            (book?.format === 'physical' || book?.format === 'both') && (
+              <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <h4 className="font-semibold text-emerald-900 text-sm">
+                  📦 Pengiriman Buku Fisik
+                </h4>
+                <p className="text-xs text-emerald-700 mt-1">
+                  Pesanan Anda sedang disiapkan oleh tim logistik. Nomor resi
+                  pengiriman akan dikirimkan via email.
+                </p>
+              </div>
+            )}
         </div>
 
         {/* BENTENG MODEL C (HYBRID): Opsi opsional buat akun */}
-        <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-xl shadow-sm border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h3 className="font-bold text-base text-slate-100">Ingin Akses Permanen?</h3>
-            <p className="text-xs text-slate-300 mt-1 max-w-md">
-              Buat akun dengan email{' '}
-              <span className="text-sky-400 font-medium">{order.customer_email}</span>{' '}
-              untuk menyimpan pesanan ini dan mengakses perpustakaan digital Anda kapan
-              saja.
-            </p>
-          </div>
-          <Link
-            href={`/register?email=${encodeURIComponent(order.customer_email)}`}
-            className="whitespace-nowrap bg-emerald-500 hover:bg-sky-400 text-slate-950 font-bold px-4 py-2.5 rounded-lg text-xs transition-colors"
-          >
-            Buat Akun Gratis
-          </Link>
-        </div>
+        <OrderSignupBanner customerEmail={order.customer_email} />
       </div>
     </div>
   );
