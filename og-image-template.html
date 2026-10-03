@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>OG Image — Mustawa Publishing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@700;900&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      width: 1200px;
+      height: 630px;
+      background: linear-gradient(135deg, #047857 0%, #059669 50%, #0d9488 100%);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      padding: 60px 70px;
+    }
+
+    /* Decorative dot pattern */
+    .pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.08;
+      background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    /* Decorative blobs */
+    .blob-1 {
+      position: absolute;
+      top: -120px;
+      right: -120px;
+      width: 400px;
+      height: 400px;
+      background: rgba(52, 211, 153, 0.3);
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    .blob-2 {
+      position: absolute;
+      bottom: -120px;
+      left: -120px;
+      width: 400px;
+      height: 400px;
+      background: rgba(13, 148, 136, 0.3);
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    /* Content */
+    .content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    /* Top: Logo */
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-icon {
+      width: 90px;
+      height: 90px;
+      background: white;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .logo-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      color: white;
+    }
+
+    .logo-text .name {
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      font-size: 32px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-text .tag {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 1;
+      margin-top: 8px;
+      color: #d1fae5;
+      letter-spacing: 0.28em;
+      padding-left: 2px;
+    }
+
+    /* Middle: Main Text */
+    .main-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 30px 0;
+    }
+
+    .headline {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: 72px;
+      line-height: 1.05;
+      color: white;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+
+    .headline .highlight {
+      color: #fef3c7;
+      display: block;
+    }
+
+    .subheadline {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 26px;
+      line-height: 1.4;
+      color: #d1fae5;
+      max-width: 900px;
+    }
+
+    /* Bottom: Features */
+    .features {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      padding-top: 24px;
+      border-top: 2px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .feature-icon {
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .url-badge {
+      margin-left: auto;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      padding: 10px 20px;
+      border-radius: 999px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Decorations -->
+    <div class="pattern"></div>
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Logo -->
+      <div class="logo-section">
+        <div class="logo-icon">
+          <img src="file:///C:/Users/user/toko-buku-kustom/public/logo-icon.png" alt="Mustawa Publishing" />
+        </div>
+        <div class="logo-text">
+          <div class="name">MUSTAWA</div>
+          <div class="tag">PUBLISHING</div>
+        </div>
+      </div>
+
+      <!-- Headline -->
+      <div class="main-section">
+        <h1 class="headline">
+          Tempat Gagasan
+          <span class="highlight">Mulia Mulai Dituliskan</span>
+        </h1>
+        <p class="subheadline">
+          Platform penerbitan mandiri profesional untuk penulis Indonesia.
+        </p>
+      </div>
+
+      <!-- Features -->
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <span>ISBN Gratis Perpusnas</span>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <span>Cetak & E-Book</span>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <span>Editor Profesional</span>
+        </div>
+        <div class="url-badge">toko-buku-kustom-t4mr.vercel.app</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
