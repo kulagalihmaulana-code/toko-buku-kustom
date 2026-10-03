@@ -18,6 +18,7 @@ export default function EditBookPage() {
 
   // Form fields
   const [title, setTitle] = useState('');
+  const [subtitle, setSubtitle] = useState(''); // ← BARU
   const [author, setAuthor] = useState('');
   const [editor, setEditor] = useState('');
   const [description, setDescription] = useState('');
@@ -26,6 +27,7 @@ export default function EditBookPage() {
   const [pageCount, setPageCount] = useState('');
   const [publicationYear, setPublicationYear] = useState('');
   const [bookSize, setBookSize] = useState('');
+  const [paperType, setPaperType] = useState(''); // ← BARU
   const [format, setFormat] = useState<'ebook' | 'physical' | 'both'>('ebook');
   const [stock, setStock] = useState('');
 
@@ -78,6 +80,7 @@ export default function EditBookPage() {
 
       // Isi form
       setTitle(book.title || '');
+      setSubtitle(book.subtitle || ''); // ← BARU
       setAuthor(book.author || '');
       setEditor(book.editor || '');
       setDescription(book.description || '');
@@ -88,6 +91,7 @@ export default function EditBookPage() {
         book.publication_year ? String(book.publication_year) : ''
       );
       setBookSize(book.book_size || '');
+      setPaperType(book.paper_type || ''); // ← BARU
       setFormat(book.format || 'ebook');
       setStock(
         book.stock !== null && book.stock !== undefined
@@ -118,7 +122,6 @@ export default function EditBookPage() {
     setUploadProgress('');
 
     try {
-      // Validasi harga
       if (format === 'both') {
         if (!priceEbook || !pricePhysical || !priceBundle) {
           throw new Error('Isi semua 3 harga (E-Book, Fisik, Bundle)');
@@ -129,7 +132,6 @@ export default function EditBookPage() {
         }
       }
 
-      // Hitung nilai SEBELUM blok if (biar TS tidak menyempitkan tipe)
       const mainPrice =
         format === 'both' ? Number(priceEbook) : Number(price);
       const priceEbookValue = format === 'both' ? Number(priceEbook) : null;
@@ -145,7 +147,6 @@ export default function EditBookPage() {
       let coverUrl = currentCover;
       let filePath = currentFile;
 
-      // Upload cover baru
       if (coverFile) {
         setUploadProgress('Upload cover baru...');
         const coverExt = coverFile.name.split('.').pop();
@@ -165,7 +166,6 @@ export default function EditBookPage() {
         coverUrl = coverData.publicUrl;
       }
 
-      // Upload ebook baru
       if (ebookFile && (format === 'ebook' || format === 'both')) {
         setUploadProgress('Upload e-book PDF baru...');
         const pdfName = `${Date.now()}-${ebookFile.name}`;
@@ -179,12 +179,12 @@ export default function EditBookPage() {
         filePath = pdfName;
       }
 
-      // Update
       setUploadProgress('Menyimpan perubahan...');
       const { error: updateError } = await supabase
         .from('books')
         .update({
           title,
+          subtitle: subtitle || null, // ← BARU
           author,
           editor: editor || null,
           description,
@@ -195,6 +195,7 @@ export default function EditBookPage() {
             ? Number(publicationYear)
             : null,
           book_size: bookSize || null,
+          paper_type: paperType || null, // ← BARU
           price: mainPrice,
           price_ebook: priceEbookValue,
           price_physical: pricePhysicalValue,
@@ -289,6 +290,20 @@ export default function EditBookPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+
+            {/* ← BARU: Subjudul */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">
+                Subjudul
+              </label>
+              <input
+                type="text"
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Opsional"
               />
             </div>
 
@@ -398,6 +413,20 @@ export default function EditBookPage() {
                 onChange={(e) => setBookSize(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="Contoh: 14x20 cm"
+              />
+            </div>
+
+            {/* ← BARU: Jenis Kertas */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-1">
+                Jenis Kertas
+              </label>
+              <input
+                type="text"
+                value={paperType}
+                onChange={(e) => setPaperType(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Contoh: Bookpaper 57gsm"
               />
             </div>
           </div>

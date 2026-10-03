@@ -18,6 +18,7 @@ function NewBookForm() {
 
   // Form fields
   const [title, setTitle] = useState('');
+  const [subtitle, setSubtitle] = useState(''); // ← BARU
   const [author, setAuthor] = useState('');
   const [description, setDescription] = useState('');
   const [format, setFormat] = useState<'ebook' | 'physical' | 'both'>('ebook');
@@ -29,6 +30,7 @@ function NewBookForm() {
     new Date().getFullYear().toString()
   );
   const [bookSize, setBookSize] = useState('');
+  const [paperType, setPaperType] = useState(''); // ← BARU
   const [editor, setEditor] = useState('');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [ebookFile, setEbookFile] = useState<File | null>(null);
@@ -100,7 +102,6 @@ function NewBookForm() {
     setUploadProgress('');
 
     try {
-      // Validasi harga
       if (format === 'both') {
         if (!priceEbook || !pricePhysical || !priceBundle) {
           throw new Error('Isi semua 3 harga (E-Book, Fisik, Bundle)');
@@ -126,7 +127,6 @@ function NewBookForm() {
         }
       }
 
-      // Hitung semua nilai SEBELUM blok if (biar TS tidak menyempitkan tipe)
       const mainPrice =
         format === 'both' ? Number(priceEbook) : Number(price);
       const priceEbookValue = format === 'both' ? Number(priceEbook) : null;
@@ -142,7 +142,6 @@ function NewBookForm() {
       let coverUrl = null;
       let filePath = null;
 
-      // Upload cover
       if (coverFile) {
         setUploadProgress('Upload cover...');
         const coverExt = coverFile.name.split('.').pop();
@@ -162,7 +161,6 @@ function NewBookForm() {
         coverUrl = coverData.publicUrl;
       }
 
-      // Upload ebook
       if (ebookFile && (format === 'ebook' || format === 'both')) {
         setUploadProgress('Upload e-book PDF...');
         const pdfName = `${Date.now()}-${ebookFile.name}`;
@@ -179,6 +177,7 @@ function NewBookForm() {
       setUploadProgress('Menyimpan data buku...');
       const { error: insertError } = await supabase.from('books').insert({
         title,
+        subtitle: subtitle || null, // ← BARU
         author,
         description,
         price: mainPrice,
@@ -194,6 +193,7 @@ function NewBookForm() {
         page_count: pageCount ? Number(pageCount) : null,
         publication_year: publicationYear ? Number(publicationYear) : null,
         book_size: bookSize || null,
+        paper_type: paperType || null, // ← BARU
         editor: editor || null,
         publisher_name: 'Mustawa Publishing',
         language: 'Indonesia',
@@ -201,7 +201,6 @@ function NewBookForm() {
 
       if (insertError) throw new Error('Gagal simpan: ' + insertError.message);
 
-      // Update status naskah
       if (submissionId) {
         setUploadProgress('Update status naskah...');
         await supabase
@@ -303,6 +302,19 @@ function NewBookForm() {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">
+                Subjudul
+              </label>
+              <input
+                type="text"
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Opsional (contoh: Panduan Praktis untuk Pemula)"
+              />
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
@@ -339,7 +351,7 @@ function NewBookForm() {
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                placeholder="Contoh: Fiksi, Pendidikan, Agama"
+                placeholder="Contoh: Fikih, Akidah, Self-Development"
               />
             </div>
 
@@ -398,7 +410,7 @@ function NewBookForm() {
                 value={pageCount}
                 onChange={(e) => setPageCount(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                placeholder="Contoh: 120"
+                placeholder="Contoh: 180"
               />
             </div>
 
@@ -413,6 +425,23 @@ function NewBookForm() {
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="Contoh: 14x20 cm"
               />
+            </div>
+
+            {/* ← BARU: Jenis Kertas */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-1">
+                Jenis Kertas
+              </label>
+              <input
+                type="text"
+                value={paperType}
+                onChange={(e) => setPaperType(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Contoh: Bookpaper 57gsm"
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                Opsional — untuk buku fisik
+              </p>
             </div>
           </div>
         </div>

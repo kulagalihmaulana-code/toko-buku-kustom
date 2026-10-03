@@ -78,18 +78,21 @@ export default async function BookDetailPage({
 
   const hasPhysical = book.format === 'physical' || book.format === 'both';
 
-  // Hitung hemat bundle
   const bundleSave =
-    book.format === 'both' && book.price_ebook && book.price_physical && book.price_bundle
-      ? Number(book.price_ebook) + Number(book.price_physical) - Number(book.price_bundle)
+    book.format === 'both' &&
+    book.price_ebook &&
+    book.price_physical &&
+    book.price_bundle
+      ? Number(book.price_ebook) +
+        Number(book.price_physical) -
+        Number(book.price_bundle)
       : 0;
 
-  // Metadata wajib untuk Perpusnas
+  // Metadata Perpusnas (TANPA bahasa, edisi, penerjemah)
   const metadata = [
-    { label: 'ISBN', value: book.isbn || '—' },
+    { label: 'ISBN', value: book.isbn || 'Dalam Proses' },
     { label: 'Penulis', value: book.author || '—' },
     { label: 'Editor', value: book.editor || '—' },
-    { label: 'Penerjemah', value: book.translator || '—' },
     { label: 'Penerbit', value: book.publisher_name || 'Mustawa Publishing' },
     { label: 'Tahun Terbit', value: book.publication_year || '—' },
     { label: 'Ukuran', value: book.book_size || '—' },
@@ -98,8 +101,6 @@ export default async function BookDetailPage({
       value: book.page_count ? `${book.page_count} hlm` : '—',
     },
     { label: 'Jenis Kertas', value: book.paper_type || '—' },
-    { label: 'Edisi', value: book.edition || 'Cetakan 1' },
-    { label: 'Bahasa', value: book.language || 'Indonesia' },
     { label: 'Format', value: formatLabel },
     { label: 'Kategori', value: book.category || '—' },
   ];
@@ -120,6 +121,9 @@ export default async function BookDetailPage({
           <span className="text-slate-700">{book.title}</span>
         </nav>
 
+        {/* ============================================ */}
+        {/* BAGIAN 1: HERO PRODUK */}
+        {/* ============================================ */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 sm:p-10">
             {/* Cover */}
@@ -140,13 +144,13 @@ export default async function BookDetailPage({
                   )}
                 </div>
 
-                {/* Badge format */}
+                {/* Badge format & kategori */}
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="inline-block px-3 py-1 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-700 uppercase">
                     {formatLabel}
                   </span>
                   {book.category && (
-                    <span className="inline-block px-3 py-1 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-700">
+                    <span className="inline-block px-3 py-1 text-xs font-semibold rounded-lg bg-sky-50 text-sky-700">
                       {book.category}
                     </span>
                   )}
@@ -154,14 +158,16 @@ export default async function BookDetailPage({
               </div>
             </div>
 
-            {/* Detail */}
+            {/* Detail Hero */}
             <div className="lg:col-span-2">
               <div className="mb-6">
                 <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-2">
                   {book.title}
                 </h1>
                 {book.subtitle && (
-                  <p className="text-lg text-slate-500 mb-2">{book.subtitle}</p>
+                  <p className="text-lg text-slate-500 mb-2">
+                    {book.subtitle}
+                  </p>
                 )}
                 <p className="text-slate-600">
                   oleh{' '}
@@ -169,6 +175,14 @@ export default async function BookDetailPage({
                     {book.author}
                   </span>
                 </p>
+                {book.category && (
+                  <p className="text-sm text-slate-500 mt-1">
+                    Kategori:{' '}
+                    <span className="font-medium text-slate-700">
+                      {book.category}
+                    </span>
+                  </p>
+                )}
               </div>
 
               {/* Harga & Beli */}
@@ -262,7 +276,6 @@ export default async function BookDetailPage({
                   )}
                 </div>
 
-                {/* Info stok fisik / ebook */}
                 {hasPhysical ? (
                   <div className="mt-4 pt-4 border-t border-emerald-200 space-y-1">
                     <p className="text-xs text-emerald-700">
@@ -280,44 +293,54 @@ export default async function BookDetailPage({
                   </p>
                 )}
               </div>
-
-              {/* Metadata Buku (WAJIB untuk Perpusnas) */}
-              <div className="mb-8">
-                <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  📋 Detail Buku
-                </h2>
-                <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
-                  <table className="w-full text-sm">
-                    <tbody className="divide-y divide-slate-200">
-                      {metadata.map((item, i) => (
-                        <tr key={i}>
-                          <td className="px-4 py-3 text-slate-500 font-medium w-1/3">
-                            {item.label}
-                          </td>
-                          <td className="px-4 py-3 text-slate-800 font-semibold">
-                            {item.value}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Sinopsis */}
-              {book.description && (
-                <div>
-                  <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    📖 Sinopsis
-                  </h2>
-                  <div className="text-slate-700 leading-relaxed whitespace-pre-line">
-                    {book.description}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
+
+        {/* ============================================ */}
+        {/* BAGIAN 2: METADATA PERPUSNAS */}
+        {/* ============================================ */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 mt-6">
+          <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            📋 Detail Buku
+          </h2>
+          <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-slate-200">
+                {metadata.map((item, i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-3 text-slate-500 font-medium w-1/3">
+                      {item.label}
+                    </td>
+                    <td className="px-4 py-3 text-slate-800 font-semibold">
+                      {item.value === 'Dalam Proses' ? (
+                        <span className="text-amber-600 italic">
+                          {item.value}
+                        </span>
+                      ) : (
+                        item.value
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ============================================ */}
+        {/* BAGIAN 3: SINOPSIS */}
+        {/* ============================================ */}
+        {book.description && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 mt-6">
+            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+              📖 Sinopsis
+            </h2>
+            <div className="text-slate-700 leading-relaxed whitespace-pre-line">
+              {book.description}
+            </div>
+          </div>
+        )}
 
         {/* Kembali */}
         <div className="mt-8">
