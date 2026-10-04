@@ -38,27 +38,34 @@ export default function TentangPage() {
           <div className="space-y-4 text-slate-700 leading-relaxed">
             <p>
               Nama <strong className="text-slate-800">"Mustawa"</strong>{' '}
-              diangkat dari sebuah momentum agung dalam sejarah literasi
-              peradaban. Terinspirasi dari kisah perjalanan Mi'raj Nabi Muhammad
-              ﷺ, Mustawa adalah sebuah tempat tinggi yang menjadi saksi di mana
-              suara gesekan pena-pena takdir terdengar.
+              diangkat dari sebuah momentum agung dalam sejarah spiritualitas
+              dan literasi peradaban. Terinspirasi dari kisah perjalanan
+              Mi&apos;raj Nabi Muhammad ﷺ, Mustawa adalah tempat tertinggi di
+              atas langit ketujuh yang menjadi saksi dua peristiwa mahapenting:
+              diterimanya perintah shalat lima waktu, serta terdengarnya suara
+              gesekan pena-pena takdir yang sedang mencatat ketetapan ilahi.
             </p>
             <p>
-              Bagi kami, peristiwa tersebut adalah simbol bahwa{' '}
+              Bagi kami, peristiwa spiritual ini adalah simbol kesempurnaan.
+              Perintah shalat yang diterima di sana melambangkan fondasi hukum
+              dan spiritualitas terdalam, sementara gesekan pena menegaskan
+              bahwa{' '}
               <strong className="text-slate-800">
-                tulisan dan pena memiliki kedudukan yang sangat mulia
-              </strong>
-              .
+                tulisan, ilmu, dan kebenaran memiliki kedudukan yang sangat
+                mulia
+              </strong>{' '}
+              di sisi Allah ﷻ.
             </p>
             <p>
-              Berangkat dari filosofi tersebut, Mustawa Publishing berkomitmen
-              untuk menjadi ruang bagi setiap penulis dalam menggoreskan
-              penanya. Kata Mustawa yang juga berarti{' '}
+              Berangkat dari filosofi luhur tersebut, Mustawa Publishing
+              berkomitmen untuk menjadi ruang bagi setiap penulis dalam
+              menggoreskan penanya untuk menyebarkan kebenaran. Kata Mustawa
+              yang dalam bahasa modern juga berarti{' '}
               <strong className="text-slate-800">"Tingkat"</strong> atau{' '}
-              <strong className="text-slate-800">"Standar"</strong> menjadi
-              pemacu kami untuk terus mendampingi penulis lokal dalam menaikkan
-              level kualitas tulisan mereka hingga mencapai standar literasi
-              tertinggi.
+              <strong className="text-slate-800">"Standar"</strong>, menjadi
+              pemacu kami untuk terus mendampingi para penulis dalam menaikkan
+              level kualitas karya mereka hingga mencapai standar literasi dan
+              kemanfaatan tertinggi.
             </p>
           </div>
         </section>
@@ -200,7 +207,7 @@ export default function TentangPage() {
                 Status Registrasi
               </p>
               <p className="font-bold text-slate-800 text-sm">
-                Terdaftar di Perpustakaan Nasional RI
+                Berkomitmen Terdaftar di Perpustakaan Nasional RI
               </p>
             </div>
           </div>

@@ -39,7 +39,6 @@ export default async function HomePage() {
       {/* HERO SECTION */}
       {/* ============================================ */}
       <section className="relative bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-700 text-white overflow-hidden">
-        {/* Decorative dot pattern */}
         <div className="absolute inset-0 opacity-10">
           <div
             className="absolute inset-0"
@@ -51,7 +50,6 @@ export default async function HomePage() {
           ></div>
         </div>
 
-        {/* Decorative blobs */}
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-teal-300/20 rounded-full blur-3xl"></div>
 
@@ -93,7 +91,6 @@ export default async function HomePage() {
               </Link>
             </div>
 
-            {/* Trust Badges */}
             <div className="flex flex-wrap gap-x-6 gap-y-3 text-xs text-emerald-100/80">
               <div className="flex items-center gap-2">
                 <span className="text-emerald-300">✓</span>
@@ -115,7 +112,6 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Decorative bottom curve */}
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white/0 to-white"></div>
       </section>
 
@@ -134,27 +130,34 @@ export default async function HomePage() {
           <div className="text-left max-w-3xl mx-auto space-y-5 text-slate-600 leading-relaxed">
             <p>
               Nama <strong className="text-slate-800">"Mustawa"</strong>{' '}
-              diangkat dari sebuah momentum agung dalam sejarah literasi
-              peradaban. Terinspirasi dari kisah perjalanan Mi'raj Nabi Muhammad
-              ﷺ, Mustawa adalah sebuah tempat tinggi yang menjadi saksi di mana
-              suara gesekan pena-pena takdir terdengar.
+              diangkat dari sebuah momentum agung dalam sejarah spiritualitas
+              dan literasi peradaban. Terinspirasi dari kisah perjalanan
+              Mi&apos;raj Nabi Muhammad ﷺ, Mustawa adalah tempat tertinggi di
+              atas langit ketujuh yang menjadi saksi dua peristiwa mahapenting:
+              diterimanya perintah shalat lima waktu, serta terdengarnya suara
+              gesekan pena-pena takdir yang sedang mencatat ketetapan ilahi.
             </p>
             <p>
-              Bagi kami, peristiwa tersebut adalah simbol bahwa{' '}
+              Bagi kami, peristiwa spiritual ini adalah simbol kesempurnaan.
+              Perintah shalat yang diterima di sana melambangkan fondasi hukum
+              dan spiritualitas terdalam, sementara gesekan pena menegaskan
+              bahwa{' '}
               <strong className="text-slate-800">
-                tulisan dan pena memiliki kedudukan yang sangat mulia
-              </strong>
-              .
+                tulisan, ilmu, dan kebenaran memiliki kedudukan yang sangat
+                mulia
+              </strong>{' '}
+              di sisi Allah ﷻ.
             </p>
             <p>
-              Berangkat dari filosofi tersebut, Mustawa Publishing berkomitmen
-              untuk menjadi ruang bagi setiap penulis dalam menggoreskan
-              penanya. Kata Mustawa yang juga berarti{' '}
+              Berangkat dari filosofi luhur tersebut, Mustawa Publishing
+              berkomitmen untuk menjadi ruang bagi setiap penulis dalam
+              menggoreskan penanya untuk menyebarkan kebenaran. Kata Mustawa
+              yang dalam bahasa modern juga berarti{' '}
               <strong className="text-slate-800">"Tingkat"</strong> atau{' '}
-              <strong className="text-slate-800">"Standar"</strong> menjadi
-              pemacu kami untuk terus mendampingi penulis lokal dalam menaikkan
-              level kualitas tulisan mereka hingga mencapai standar literasi
-              tertinggi.
+              <strong className="text-slate-800">"Standar"</strong>, menjadi
+              pemacu kami untuk terus mendampingi para penulis dalam menaikkan
+              level kualitas karya mereka hingga mencapai standar literasi dan
+              kemanfaatan tertinggi.
             </p>
           </div>
         </div>
@@ -166,7 +169,6 @@ export default async function HomePage() {
       <section className="py-16 px-4 bg-slate-50">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Visi */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
               <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-2xl mb-4">
                 🎯
@@ -179,7 +181,6 @@ export default async function HomePage() {
               </p>
             </div>
 
-            {/* Misi */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
               <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-2xl mb-4">
                 🚀
@@ -328,7 +329,6 @@ export default async function HomePage() {
                         </div>
                       )}
 
-                      {/* Badge format */}
                       <div className="absolute top-3 left-3">
                         <span className="inline-block px-2.5 py-1 text-xs font-bold rounded-lg bg-white/95 backdrop-blur-sm text-emerald-700 uppercase shadow-sm">
                           {book.format === 'ebook'
@@ -379,7 +379,6 @@ export default async function HomePage() {
       {/* CTA KIRIM NASKAH */}
       {/* ============================================ */}
       <section className="relative py-20 px-4 bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-700 text-white overflow-hidden">
-        {/* Decorative */}
         <div className="absolute -top-20 -right-20 w-72 h-72 bg-emerald-400/20 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-teal-300/20 rounded-full blur-3xl"></div>
 
