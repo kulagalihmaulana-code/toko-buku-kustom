@@ -127,7 +127,7 @@ export default async function HomePage() {
             Filosofi <span className="text-emerald-600">Mustawa</span>
           </h2>
 
-          <div className="text-left max-w-3xl mx-auto space-y-5 text-slate-600 leading-relaxed">
+          <div className="text-justify max-w-3xl mx-auto space-y-5 text-slate-600 leading-relaxed hyphens-auto">
             <p>
               Nama <strong className="text-slate-800">"Mustawa"</strong>{' '}
               diangkat dari sebuah momentum agung dalam sejarah spiritualitas

@@ -35,7 +35,7 @@ export default function TentangPage() {
             Filosofi Mustawa
           </h2>
 
-          <div className="space-y-4 text-slate-700 leading-relaxed">
+          <div className="space-y-4 text-slate-700 leading-relaxed text-justify hyphens-auto">
             <p>
               Nama <strong className="text-slate-800">"Mustawa"</strong>{' '}
               diangkat dari sebuah momentum agung dalam sejarah spiritualitas
