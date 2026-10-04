@@ -60,7 +60,7 @@ export const metadata: Metadata = {
       {
         url: '/og-image.png',
         width: 1200,
-        height: 670,
+        height: 630,
         alt: 'Mustawa Publishing — Tempat Gagasan Mulia Mulai Dituliskan',
       },
     ],
